@@ -22,7 +22,17 @@ namespace WTalk.Server
     {
         public MainWindow()
         {
+            this.Left = 200;
+            this.Top = 200;
             InitializeComponent();
+        }
+
+        private void btnStart_Click(object sender, RoutedEventArgs e)
+        {
+            ServerWindow sw = new ServerWindow();
+            sw.Left = this.Left + 200;
+            sw.Top = this.Top;
+            sw.Show();
         }
     }
 }

@@ -5,8 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WTalk.Server"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="WTalk.Server" Height="200" Width="200" ResizeMode="NoResize">
     <Grid>
-        
+        <Button Name="btnStart" Content="启动" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="174" Click="btnStart_Click"/>
+
     </Grid>
 </Window>

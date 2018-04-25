@@ -5,8 +5,76 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WTalk.Client"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="WTalk-v.2.0" Height="265" Width="260">
     <Grid>
-        
+        <TabControl>
+            <TabItem>
+                <TabItem.Header>
+                    <TextBlock Width="30" Height="15" Text="登陆" TextWrapping="Wrap"/>
+                </TabItem.Header>
+                <Grid>
+                    <Grid Margin="0,50,0,100">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="40"/>
+                            <ColumnDefinition Width="40"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="40"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Label Grid.Column="1" Grid.Row="0" Content="账号："/>
+                        <TextBox Name="txtId" Grid.Column="2" Grid.Row="0" Height="25" VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,0"/>
+                        <Label Grid.Column="1" Grid.Row="1" Content="密码："/>
+                        <PasswordBox Name="txtPwd" Grid.Column="2" Height="25" VerticalAlignment="Top" VerticalContentAlignment="Center" Grid.Row="1"/>
+                    </Grid>
+                    <Grid Margin="0,150,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="40"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="40"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="30"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Button Content="登陆" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Name="btnLogin" Margin="5,5,0,5" Click="btnLogin_Click"/>
+                    </Grid>
+                </Grid>
+            </TabItem>
+            <TabItem>
+                <TabItem.Header>
+                    <TextBlock Width="30" Height="15" Text="注册" TextWrapping="Wrap"/>
+                </TabItem.Header>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="180"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Label Grid.Column="0" Grid.Row="1" Padding="0" Content="昵称：" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                    <Label Grid.Column="0" Grid.Row="2" Padding="0" Content="密码：" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                    <Label Grid.Column="0" Grid.Row="3" Padding="0" Content="重复密码：" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                    <TextBox Name="txtName" Grid.Column="1" Grid.Row="1" Height="25" Width="150" Margin="0" HorizontalAlignment="Left"/>
+                    <PasswordBox Name="Pwd" Grid.Column="1" Grid.Row="2" Height="25" Width="150" Margin="0" HorizontalAlignment="Left"/>
+                    <PasswordBox Name="Pwd2" Grid.Column="1" Grid.Row="3" Height="25" Width="150" Margin="0" HorizontalAlignment="Left"/>
+                    <Grid Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2">
+                        <Button Name="btnSignup" Height="30" Margin="50,0,138,0.4" Content="注册" Click="btnSignUp_Click"/>
+                        <Button Name="btnCancel" Height="30" Margin="138,0,50,0.4" Content="取消" Click="btnCancel_Click"/>
+
+                    </Grid>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>

@@ -13,10 +13,15 @@ namespace WTalk.Helpers
     {
         public IPAddress IP { get; set; }
         public int port { get; set; }
+        public TcpListener tcpListener { get; set; }
         public TcpClient tcpClient { get; set; }
         public BinaryReader br { get; set; }
         public BinaryWriter bw { get; set; }
+        public event EventHandler<string> DataHandler;  //接受数据处理
+        public event EventHandler<TcpClient> AddTcpClientHandler;   //添加客户端处理
+        public event EventHandler<string> ExHandler;  //丢失连接处理
 
+        //指定本机
         public TCPHelper()
         {
             port = 51888;
@@ -37,11 +42,16 @@ namespace WTalk.Helpers
             this.IP = ip;
             this.port = port;
         }
-        public void ConnectServer()
+
+        //连接服务器
+        public void Ready()
         {
             try
             {
-                tcpClient = new TcpClient(IP.ToString(), port);
+                if(tcpClient == null)
+                {
+                    tcpClient = new TcpClient(IP.ToString(), port);
+                }
                 NetworkStream stream = tcpClient.GetStream();
                 br = new BinaryReader(stream);
                 bw = new BinaryWriter(stream);
@@ -49,10 +59,11 @@ namespace WTalk.Helpers
             catch(Exception e)
             {
                 throw e;
+
             }
         }
-
-        public void Send2Server(string msg)
+        //发送消息
+        public void SendMessage(string msg)
         {
             if (bw != null)
             {
@@ -63,8 +74,69 @@ namespace WTalk.Helpers
                 }
                 catch(Exception e)
                 {
-                    throw e;//异常处理
+                    //throw e;//异常处理
+                    if(ExHandler != null)
+                    {
+                        ExHandler(null, string.Format("{0}:{1}-->发送失败-->{2}", IP.ToString(), port, e.Message));
+                    }
+                    return;
+
                 }
+            }
+        }
+        //接收数据
+        public void ReceiveData()
+        {
+            string receiveString = null;
+            while (true)
+            {
+                try { receiveString = br.ReadString(); }
+                catch
+                {
+                    //throw e;
+                    if(ExHandler != null)
+                    {
+                        ExHandler(null, string.Format("{0}:{1}-->已经掉线", IP.ToString(), port));
+                    }
+                    return;
+                }
+                if(DataHandler != null && receiveString != null)
+                {
+                    DataHandler(bw, receiveString);
+                }
+            }
+        }
+        //监听客户端
+        public void ListenClient()
+        {
+            TcpClient newClient = null;
+            while(true)
+            {
+                try
+                {
+                    newClient = tcpListener.AcceptTcpClient();
+                    if(AddTcpClientHandler!= null)
+                    {
+                        AddTcpClientHandler(null, newClient);
+                    }
+                }
+                catch { break; }
+            }
+            
+        }
+        //开始监听
+        public void StartListen(int p)
+        {
+            port = p;
+            tcpListener = new TcpListener(IP, p);
+            tcpListener.Start();
+        }
+        //停止监听
+        public void StopListen()
+        {
+            if(tcpListener != null)
+            {
+                tcpListener.Stop();
             }
         }
     }
