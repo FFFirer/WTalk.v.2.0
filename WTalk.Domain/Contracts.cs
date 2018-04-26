@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net;
+using System.Net.Sockets;
 
 namespace WTalk.Domain
 {
@@ -14,16 +16,28 @@ namespace WTalk.Domain
     {
         public string UserId { get; set; }
         public string UserName { get; set; }
-        public string UserPwd { get; set; }
+        public Status IsOnline { get; set; }
+        public IPAddress ip { get; set; }
         public User() { }
-        public User(string id, string name, string pwd)
+        public User(string id, string name, Status isonline, IPAddress ip)
         {
             this.UserId = id;
             this.UserName = name;
-            this.UserPwd = pwd;
+            this.IsOnline = isonline;
+            this.ip = ip;
         }
     }
-    //客户端向服务端发送的消息协议
+    public class AddFriend
+    {
+        public string UserId { get; set; }
+        public AddFriend() { } 
+        public AddFriend(string id)
+        {
+            this.UserId = id;
+        }
+    }
+    #region 客户端向服务端发送的消息协议
+    //登陆
     public class LoginContract
     {
         public string UserId { get; set; }
@@ -36,7 +50,7 @@ namespace WTalk.Domain
             this.UserPwd = pwd;
         }
     }
-
+    //注册
     public class SignupContract
     {
         public string UserName { get; set; }
@@ -48,7 +62,7 @@ namespace WTalk.Domain
             this.UserPwd = pwd;
         }
     }
-
+    //登出
     public class LogoutContract
     {
         public string UserId { get; set; }
@@ -58,7 +72,7 @@ namespace WTalk.Domain
             this.UserId = id;
         }
     }
-
+    //寻找好友
     public class SearchContract
     {
         public string UserId { get; set; }
@@ -68,7 +82,7 @@ namespace WTalk.Domain
             this.UserId = id;
         }
     }
-
+    //添加好友
     public class AddContract
     {
         public string UserId { get; set; }
@@ -78,7 +92,7 @@ namespace WTalk.Domain
             this.UserId = id;
         }
     }
-
+    //删除好友
     public class RemoveContract
     {
         public string UserId { get; set; }
@@ -88,7 +102,7 @@ namespace WTalk.Domain
             this.UserId = id;
         }
     }
-
+    //聊天消息
     public class TalkContract
     {
         public string SenderId { get; set; }
@@ -102,7 +116,7 @@ namespace WTalk.Domain
             this.Content = content;
         }
     }
-
+    //添加好友确认回调
     public class AddConfirmCallBack
     {
         public string UserId { get; set; }
@@ -117,37 +131,106 @@ namespace WTalk.Domain
     public enum Status
     {
         No = 0,
-        Yse = 1
+        Yes = 1,
+        Online = 2,
+        Offline = 3,
+        Add = 4,
+        Remove = 5,
+        Agree = 6,
+        DisAgree = 7
     }
+    #endregion
 
-    //服务端向客户端发送的消息协议
-    public class LoginCallBackContract
+    #region 服务端向客户端发送的消息协议
+    //登陆回调
+    public class LoginCallBack
     {
+        public Status LoginStatus { get; set; } //Yes or No
+        public List<User> UsersInfo { get; set; }
+        public List<TalkContract> Talks { get; set; }
+        public List<AddFriend> AddFriends { get; set; }
+        public string msg { get; set; }
 
+        public LoginCallBack() { }
+        public LoginCallBack(Status status, List<User> usersInfo, List<TalkContract> talks, List<AddFriend> addFriends, string msg)
+        {
+            this.LoginStatus = status;
+            this.UsersInfo = usersInfo;
+            this.Talks = talks;
+            this.AddFriends = addFriends;
+            this.msg = msg;
+        }
     }
-
+    //注册回调
+    public class SignUpCallBack
+    {
+        public Status status { get; set; }
+        public string UserId { get; set; }
+        public string MoreMsg { get; set; }
+        public SignUpCallBack() { }
+        public SignUpCallBack(Status status, string id, string msg)
+        {
+            this.status = status;
+            this.UserId = id;
+            this.MoreMsg = msg;
+        }
+    }
+    //出席消息
     public class PresenceMsg
     {
+        public string UserId { get; set; }
+        public string Time { get; set; }
+        public IPAddress IP { get; set; }
+        public Status status { get; set; }
 
+        public PresenceMsg() { }
+        public PresenceMsg(string userId, string time, IPAddress ip, Status status)
+        {
+            this.UserId = userId;
+            this.Time = time;
+            this.IP = ip;
+            this.status = status;
+        }
     }
-
+    //搜索回调
     public class SearchCallBack
     {
-
+        public List<User> Users { get; set; }
+        public SearchCallBack() { }
+        public SearchCallBack(List<User> users)
+        {
+            this.Users = users;
+        }
     }
-
+    //添加好友回调
     public class AddCallBack
     {
-
+        public string UserId { get; set; }
+        public Status status { get; set; }
+        public AddCallBack() { }
+        public AddCallBack(string id, Status status)
+        {
+            this.UserId = id;
+            this.status = status;
+        }
     }
-
+    //好友申请确认
     public class AddConfirm
     {
-
+        public string UserId { get; set; }
+        public string UserName { get; set; }
+        public AddConfirm() { }
+        public AddConfirm(string id, string name)
+        {
+            this.UserId = id;
+            this.UserName = name;
+        }
     }
-
+    //更新好友列表
     public class UpdateFriends
     {
-
+        public Status status { get; set; }
+        public User user { get; set; }
     }
+    #endregion
 }

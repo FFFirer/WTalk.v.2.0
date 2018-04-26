@@ -78,6 +78,8 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -96,10 +98,18 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="CC\IServerHandle.cs" />
+    <Compile Include="CC\ServerHandle.cs" />
+    <Compile Include="Data\addfriend.cs" />
+    <Compile Include="Data\DataModel.cs" />
+    <Compile Include="Data\friend.cs" />
+    <Compile Include="Data\presenceuser.cs" />
+    <Compile Include="Data\user.cs" />
+    <Compile Include="Data\waitforsending.cs" />
     <Compile Include="ServerWindow.xaml.cs">
       <DependentUpon>ServerWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="WTalk.Server.CC\DataHandle.cs" />
+    <Compile Include="CC\DataHandle.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

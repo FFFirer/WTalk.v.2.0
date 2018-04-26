@@ -7,9 +7,10 @@ using System.Xml.Serialization;
 using System.IO;
 using WTalk.Domain;
 
-namespace WTalk.Server.WTalk.Server.CC
+namespace WTalk.Server.CC
 {
-    public static class DataHandle
+    
+    public class DataHandle
     {
         public static void Handle(object sender, string data)
         {
