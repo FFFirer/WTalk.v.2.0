@@ -8,7 +8,7 @@ namespace WTalk.Server.Data
     public partial class DataModel : DbContext
     {
         public DataModel()
-            : base("name=DataModel2")
+            : base("name=DataModel3")
         {
         }
 
@@ -49,7 +49,7 @@ namespace WTalk.Server.Data
                 .IsUnicode(false);
 
             modelBuilder.Entity<presenceuser>()
-                .Property(e => e.IPAdderss)
+                .Property(e => e.IPAddress)
                 .IsUnicode(false);
 
             modelBuilder.Entity<presenceuser>()

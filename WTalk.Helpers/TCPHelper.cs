@@ -20,6 +20,7 @@ namespace WTalk.Helpers
         public event EventHandler<string> DataHandler;  //接受数据处理
         public event EventHandler<TcpClient> AddTcpClientHandler;   //添加客户端处理
         public event EventHandler<string> ExHandler;  //丢失连接处理
+        public static event EventHandler<string> ExitHandler;  //退出处理
 
         //指定本机
         public TCPHelper()
@@ -96,13 +97,14 @@ namespace WTalk.Helpers
                     //throw e;
                     if(ExHandler != null)
                     {
-                        ExHandler(null, string.Format("{0}:{1}-->已经掉线", IP.ToString(), port));
+                        ExHandler(null, string.Format("{0}-->已经掉线", tcpClient.Client.RemoteEndPoint.ToString()));
+                        ExitHandler(null, tcpClient.Client.RemoteEndPoint.ToString());
                     }
                     return;
                 }
                 if(DataHandler != null && receiveString != null)
                 {
-                    DataHandler(bw, receiveString);
+                    DataHandler(this, receiveString);
                 }
             }
         }
@@ -129,7 +131,17 @@ namespace WTalk.Helpers
         {
             port = p;
             tcpListener = new TcpListener(IP, p);
-            tcpListener.Start();
+            try
+            {
+                tcpListener.Start();
+            }
+            catch(Exception e)
+            {
+                if(ExHandler != null)
+                {
+                    ExHandler(null, e.Message);
+                }
+            }
         }
         //停止监听
         public void StopListen()

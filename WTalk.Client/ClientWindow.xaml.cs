@@ -15,6 +15,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.IO;
 using WTalk.Helpers;
+using WTalk.Domain;
 
 namespace WTalk.Client
 {
@@ -24,12 +25,36 @@ namespace WTalk.Client
     public partial class ClientWindow : Window
     {
         public TCPHelper helper;
-        public ClientWindow(TCPHelper helper)
+        public List<User> Users;
+        public List<TalkContract> Talks;
+        public List<AddFriend> AddFriends;
+        public ClientWindow(TCPHelper helper, List<User> Users, List<TalkContract> Talks, List<AddFriend> AddFriends)
         {
             this.helper = helper;
+            this.Users = Users;
+            this.Talks = Talks;
+            this.AddFriends = AddFriends;
             this.Closing += ClientWindow_Closing;
             InitializeComponent();
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            string u = "好友列表:\n";
+            string t = "未读消息:\n";
+            string a = "好友申请:\n";
+            foreach(var U in Users)
+            {
+                u += string.Format("Id:{0}\nName:{1}\nStatus:{2}\nIP:{3}\n\n", U.UserId, U.UserName, U.IsOnline.ToString(), U.ip);
+            }
+            MessageBox.Show(u);
+            foreach(var T in Talks)
+            {
+                t += string.Format("{0}:{1}\n", T.SenderId, T.Content);
+            }
+            MessageBox.Show(t);
+            foreach(AddFriend As in AddFriends)
+            {
+                a += string.Format("{0}\n", As.UserId);
+            }
+            MessageBox.Show(a);
             if(helper.tcpClient!=null)
             {
                 MessageBox.Show("在线");

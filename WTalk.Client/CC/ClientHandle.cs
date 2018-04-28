@@ -9,6 +9,40 @@ namespace WTalk.Client.CC
 {
     public class ClientHandle:IClientHandle
     {
-        LoginCallBack LoginCallback(LoginCallBack)
+        public void LoginCallBack(LoginCallBack callBack)
+        {
+            
+            return;
+        }
+        public void SignupCallBack(SignUpCallBack callBack)
+        {
+
+            return;
+        }
+        public void PresenceMsg(PresenceMsg msg)
+        {
+
+            return;
+        }
+        public void SearchCallBack(SearchCallBack callBack)
+        {
+
+            return;
+        }
+        public void AddCallBack(AddCallBack callBack)
+        {
+
+            return;
+        }
+        public void AddConfirm(AddConfirm confirm)
+        {
+
+            return;
+        }
+        public void UpdateFriends(UpdateFriends friends)
+        {
+
+            return;
+        }
     }
 }

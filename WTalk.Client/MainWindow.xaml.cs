@@ -25,7 +25,9 @@ namespace WTalk.Client
     /// </summary>
     public partial class MainWindow : Window
     {
-        private TCPHelper helper = new TCPHelper(IPAddress.Parse("192.168.1.105"), 51888);
+        public static string DefaultIP = "192.168.1.105";
+        public static int DefaultPort = 51888;
+        private TCPHelper helper = new TCPHelper(IPAddress.Parse(DefaultIP), DefaultPort);
         private bool isOnline = false;
         public MainWindow()
         {
@@ -44,7 +46,7 @@ namespace WTalk.Client
             {
                 string ID = txtId.Text.Trim();
                 string Pwd = txtPwd.Password.Trim();
-                DataHelpers.LoginHandler += LoginSuccess;
+                CC.DataHandle.LoginHandler += LoginSuccess;
                 LoginContract login = new LoginContract(ID, Pwd);
                 helper.SendMessage(string.Format("LOGIN@{0}", DataHelpers.XMLSer<LoginContract>(login)));
             }
@@ -68,17 +70,24 @@ namespace WTalk.Client
             MessageBox.Show(data);
         }
 
-        public void LoginSuccess(object sender, string data)
+        public void LoginSuccess(object sender, LoginCallBack data)
         {
-            MessageBoxResult result = MessageBox.Show(data);
-            if(result == MessageBoxResult.OK)
+            if(data.LoginStatus == Status.Yes)
             {
-                App.Current.Dispatcher.Invoke(() =>
+                MessageBoxResult result = MessageBox.Show("登陆成功");
+                if (result == MessageBoxResult.OK)
                 {
-                    ClientWindow cw = new ClientWindow(helper);
-                    cw.Show();
-                    this.Close();
-                });
+                    App.Current.Dispatcher.Invoke(() =>
+                    {
+                        ClientWindow cw = new ClientWindow(helper, data.UsersInfo, data.Talks, data.AddFriends);
+                        cw.Show();
+                        this.Close();
+                    });
+                }
+            }
+            else
+            {
+                MessageBox.Show(data.msg);
             }
         }
 
@@ -92,7 +101,7 @@ namespace WTalk.Client
                     if (helper.tcpClient != null)
                     {
                         DataHelpers.ShowHandler += ShowMsg;
-                        helper.DataHandler += DataHelpers.Handle4Client;
+                        helper.DataHandler += CC.DataHandle.Handle;
                         Task.Run(() => helper.ReceiveData());
                         isOnline = true;
                     }
@@ -113,6 +122,14 @@ namespace WTalk.Client
             txtName.Clear();
             Pwd.Clear();
             Pwd2.Clear();
+        }
+
+        private void btnCheck_Click(object sender, RoutedEventArgs e)
+        {
+            string Ip = txtIP.Text.Trim();
+            int port = Convert.ToInt32(txtPort.Text.Trim());
+            helper = new TCPHelper(IPAddress.Parse(Ip), port);
+            MessageBox.Show("设置成功！");
         }
     }
 }

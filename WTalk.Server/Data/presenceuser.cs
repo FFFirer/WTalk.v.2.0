@@ -17,7 +17,7 @@ namespace WTalk.Server.Data
         public string PresenceTime { get; set; }
 
         [StringLength(50)]
-        public string IPAdderss { get; set; }
+        public string IPAddress { get; set; }
 
         [StringLength(50)]
         public string Status { get; set; }

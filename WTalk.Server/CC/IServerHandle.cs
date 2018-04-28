@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WTalk.Domain;
+using System.Net.Sockets;
 
 namespace WTalk.Server.CC
 {
     public interface IServerHandle
     {
-        LoginCallBack Login(LoginContract contract);
+        LoginCallBack Login(TcpClient client, LoginContract contract);
         SignUpCallBack Signup(SignupContract contract);
         void Logout(LogoutContract contract);
         SearchCallBack Search(SearchContract contract);

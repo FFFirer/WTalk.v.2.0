@@ -17,9 +17,9 @@ namespace WTalk.Domain
         public string UserId { get; set; }
         public string UserName { get; set; }
         public Status IsOnline { get; set; }
-        public IPAddress ip { get; set; }
+        public string ip { get; set; }
         public User() { }
-        public User(string id, string name, Status isonline, IPAddress ip)
+        public User(string id, string name, Status isonline, string ip)
         {
             this.UserId = id;
             this.UserName = name;

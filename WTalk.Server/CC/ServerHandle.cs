@@ -4,15 +4,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WTalk.Domain;
+using WTalk.Helpers;
 using WTalk.Server.Data;
 using System.Net;
+using System.Net.Sockets;
 
 namespace WTalk.Server.CC
 {
     public class ServerHandle : IServerHandle
     {
+        public ServerHandle()
+        {
+            TCPHelper.ExitHandler += RemoveUser;
+        }
         public Data.DataModel model { get; set; }
-        public LoginCallBack Login(LoginContract contract)
+        public LoginCallBack Login(TcpClient client, LoginContract contract)
         {
             using(model = new Data.DataModel())
             {
@@ -20,13 +26,16 @@ namespace WTalk.Server.CC
                 var user = model.users.Where(p => p.UserId.Equals(contract.UserId)).FirstOrDefault();
                 if (user.Password == contract.UserPwd)
                 {
+                    //将该用户写入出席服务
+                    model.presenceusers.Add(new presenceuser { UserId = contract.UserId, IPAddress = client.Client.RemoteEndPoint.ToString(), PresenceTime = DataHelpers.GetTimeStamp(), Status = Status.Online.ToString() });
+
                     //获取好友列表
                     var friends = model.friends.Where(p => p.UserId.Equals(user.UserId)).Select((p) => new User
                     {
-                        UserId = p.UserId,
+                        UserId = p.FriendId,
                         UserName = model.users.Where(q => q.UserId.Equals(p.UserId)).Select(q => q.UserName).FirstOrDefault(),
                         IsOnline = Status.Offline,
-                        ip = null
+                        ip = "127.0.0.1"
                     }).ToList();
                     //获取在线列表
                     var friendsInfo = model.friends.Join(model.presenceusers, a => a.FriendId, b => b.UserId, (a, b) => new User
@@ -34,7 +43,7 @@ namespace WTalk.Server.CC
                         UserId = b.UserId,
                         UserName = model.users.Where(p => p.UserId.Equals(a.UserId)).Select(p => p.UserName).FirstOrDefault(),
                         IsOnline = Status.Online,
-                        ip = IPAddress.Parse(b.IPAdderss)
+                        ip = b.IPAddress
                     }).ToList();
                     //合并两个文件
                     foreach(var i in friendsInfo)
@@ -60,6 +69,7 @@ namespace WTalk.Server.CC
 
                     }).ToList();
                     callback = new LoginCallBack(Status.Yes, friends, talks, adds, null);
+                    model.SaveChanges();    //刷新数据库
                     return callback;
                 }
                 else
@@ -101,6 +111,16 @@ namespace WTalk.Server.CC
         {
             AddCallBack call = new AddCallBack();
             return call;
+        }
+
+        //当用户掉线或推出时，将用户从出席服务中移除
+        public void RemoveUser(object sender, string IP)
+        {
+            using(model = new Data.DataModel())
+            {
+                model.presenceusers.Remove(model.presenceusers.Where(p => p.IPAddress.Equals(IP)).FirstOrDefault());
+                model.SaveChanges();
+            }
         }
     }
 }

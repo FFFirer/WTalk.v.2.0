@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 using System.Xml.Serialization;
 using System.IO;
 using WTalk.Domain;
+using WTalk.Helpers;
 
 namespace WTalk.Server.CC
 {
     
     public class DataHandle
     {
+        public static event EventHandler<string> ShowOnServerWindow;
         public static void Handle(object sender, string data)
         {
             ServerHandle server = new ServerHandle();
@@ -26,11 +28,23 @@ namespace WTalk.Server.CC
                         contract = WTalk.Helpers.DataHelpers.DeXMLSer<LoginContract>(d[1]);
                     }
                     catch { }
-                    LoginCallBack callBack = ish.Login(contract);
-                    BinaryWriter bw = (BinaryWriter)sender;
+                    TCPHelper helper = (TCPHelper)sender;
+                    LoginCallBack callBack = ish.Login(helper.tcpClient, contract);
+                    if(ShowOnServerWindow != null)
+                    {
+                        if (callBack.LoginStatus == Status.Yes)
+                        {
+                            string log = string.Format("{0}-->Login Success", helper.tcpClient.Client.RemoteEndPoint.ToString());
+                            ShowOnServerWindow(null, log);
+                        }
+                        else
+                        {
+                            string log = string.Format("{0}-->Login Fail", helper.tcpClient.Client.RemoteEndPoint.ToString());
+                            ShowOnServerWindow(null, log);
+                        }
+                    }
                     string msg = string.Format("LOGINCALLBACK@{0}", WTalk.Helpers.DataHelpers.XMLSer<LoginCallBack>(callBack));
-                    bw.Write(msg);
-                    bw.Flush();
+                    helper.SendMessage(msg);
                     break;
                 case "SIGNUP":
                     break;

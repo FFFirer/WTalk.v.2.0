@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WTalk.Client"
         mc:Ignorable="d"
-        Title="WTalk-v.2.0" Height="265" Width="260">
+        Title="WTalk-v.2.0" Height="265" Width="260" ResizeMode="NoResize">
     <Grid>
         <TabControl>
             <TabItem>
@@ -72,6 +72,42 @@
                         <Button Name="btnSignup" Height="30" Margin="50,0,138,0.4" Content="注册" Click="btnSignUp_Click"/>
                         <Button Name="btnCancel" Height="30" Margin="138,0,50,0.4" Content="取消" Click="btnCancel_Click"/>
 
+                    </Grid>
+                </Grid>
+            </TabItem>
+            <TabItem>
+                <TabItem.Header>
+                    <TextBlock Width="30" Height="15" Text="设置" TextWrapping="Wrap"/>
+                </TabItem.Header>
+                <Grid>
+                    <Grid Margin="0,50,0,100">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="40"/>
+                            <ColumnDefinition Width="40"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="40"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Label Grid.Column="1" Grid.Row="0" Content="IP："/>
+                        <TextBox Text="192.168.1.105" Name="txtIP" Grid.Column="2" Grid.Row="0" Height="25" VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,0"/>
+                        <Label Grid.Column="1" Grid.Row="1" Content="端口："/>
+                        <TextBox Text="51888" Name="txtPort" Grid.Column="2" Grid.Row="1" Height="25" VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,0"/>
+                    </Grid>
+                    <Grid Margin="0,150,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="40"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="40"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="30"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Button Content="确认" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Name="btnCheck" Margin="5,5,0,5" Click="btnCheck_Click"/>
                     </Grid>
                 </Grid>
             </TabItem>
