@@ -14,9 +14,23 @@ namespace WTalk.Server.CC
     {
         public static void Handle(object sender, string data)
         {
-            switch (Data_Init(data)[0])
+            ServerHandle server = new ServerHandle();
+            IServerHandle ish = (IServerHandle)server;
+            string[] d = Data_Init(data);
+            switch (d[0])
             {
                 case "LOGIN":
+                    LoginContract contract = null;
+                    try
+                    {
+                        contract = WTalk.Helpers.DataHelpers.DeXMLSer<LoginContract>(d[1]);
+                    }
+                    catch { }
+                    LoginCallBack callBack = ish.Login(contract);
+                    BinaryWriter bw = (BinaryWriter)sender;
+                    string msg = string.Format("LOGINCALLBACK@{0}", WTalk.Helpers.DataHelpers.XMLSer<LoginCallBack>(callBack));
+                    bw.Write(msg);
+                    bw.Flush();
                     break;
                 case "SIGNUP":
                     break;

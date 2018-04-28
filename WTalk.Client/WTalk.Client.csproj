@@ -81,6 +81,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="CC\ClientHandle.cs" />
+    <Compile Include="CC\DataHandle.cs" />
+    <Compile Include="CC\IClientHandle.cs" />
     <Compile Include="SignupWindow.xaml.cs">
       <DependentUpon>SignupWindow.xaml</DependentUpon>
     </Compile>

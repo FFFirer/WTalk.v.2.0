@@ -38,14 +38,15 @@ namespace WTalk.Client
             Connect();
             if(txtId.Text == "" || txtPwd.Password == "")
             {
-                ShowMsg(null, "请输入用户名和密码");
+                ShowMsg(null, "请输入用户ID和密码");
             }
             else
             {
                 string ID = txtId.Text.Trim();
                 string Pwd = txtPwd.Password.Trim();
                 DataHelpers.LoginHandler += LoginSuccess;
-                helper.SendMessage(string.Format("LOGIN@user:{0},pwd:{1}", ID, Pwd));
+                LoginContract login = new LoginContract(ID, Pwd);
+                helper.SendMessage(string.Format("LOGIN@{0}", DataHelpers.XMLSer<LoginContract>(login)));
             }
         }
 

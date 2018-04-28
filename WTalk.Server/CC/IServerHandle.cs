@@ -14,9 +14,7 @@ namespace WTalk.Server.CC
         void Logout(LogoutContract contract);
         SearchCallBack Search(SearchContract contract);
         void Presence(PresenceMsg presence);
-        //好友申请，向用户发送申请者ID，Name
-        AddConfirm Add(AddContract contract);
-        //好友申请确认，向申请者发送申请结果,并更新双方列表
-        AddCallBack AddComfirm(AddConfirmCallBack callBack);
+        AddConfirm Add(AddContract contract);   //好友申请，向用户发送申请者ID，Name
+        AddCallBack AddComfirm(AddConfirmCallBack callBack);    //好友申请确认，向申请者发送申请结果,并更新双方列表
     }
 }
