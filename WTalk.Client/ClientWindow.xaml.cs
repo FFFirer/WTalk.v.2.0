@@ -28,13 +28,17 @@ namespace WTalk.Client
         public List<User> Users;
         public List<TalkContract> Talks;
         public List<AddFriend> AddFriends;
-        public ClientWindow(TCPHelper helper, List<User> Users, List<TalkContract> Talks, List<AddFriend> AddFriends)
+        public string LocalId;
+        public ClientWindow(TCPHelper helper, List<User> Users, List<TalkContract> Talks, List<AddFriend> AddFriends, string id)
         {
             this.helper = helper;
             this.Users = Users;
             this.Talks = Talks;
             this.AddFriends = AddFriends;
+            this.LocalId = id;
             this.Closing += ClientWindow_Closing;
+            CC.DataHandle.SearchHandler += SearchCallBack;
+            CC.DataHandle.AddComfirmHandler += AddComfimCallback;
             InitializeComponent();
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
             string u = "好友列表:\n";
@@ -59,12 +63,33 @@ namespace WTalk.Client
             {
                 MessageBox.Show("在线");
             }
+            this.lblID.Content = LocalId;
+        }
+
+        private void AddComfimCallback(object sender, AddConfirm e)
+        {
+            MessageBoxResult mb = MessageBox.Show(string.Format("用户:{0}\nID:{1}\n", e.UserName, e.UserId), "好友申请", MessageBoxButton.OKCancel);
+            AddConfirmCallBack accb = new AddConfirmCallBack();
+            accb.SenderId = e.UserId;
+            accb.ReceiveId = LocalId;
+            if (mb == MessageBoxResult.OK)
+            {
+                accb.status = Status.Agree;
+            }
+            else
+            {
+                accb.status = Status.DisAgree;
+            }
+            helper.SendMessage(string.Format("ADDCONFIRMCALLBACK@{0}", DataHelpers.XMLSer<AddConfirmCallBack>(accb)));
         }
 
         private void ClientWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if(helper.tcpClient != null)
             {
+                //LogoutContract logout = new LogoutContract("12");
+                //helper.bw.Write("LOGOUT@"+DataHelpers.XMLSer<LogoutContract>(logout));
+                //helper.bw.Flush();
                 helper.br.Close();
                 helper.bw.Close();
                 helper.tcpClient.Close();
@@ -114,6 +139,35 @@ namespace WTalk.Client
             else
             {
                 this.WindowState = WindowState.Maximized;
+            }
+        }
+
+        private void btnSearch_Click(object sender, RoutedEventArgs e)
+        {
+            string key = txtSearchkey.Text.Trim();
+            try
+            {
+                int t = Convert.ToInt32(key);
+            }
+            catch
+            {
+                MessageBox.Show("请输入正确的用户ID！");
+            }
+            SearchContract search = new SearchContract(key);
+            string request = string.Format("SEARCH@{0}", DataHelpers.XMLSer<SearchContract>(search));
+            helper.bw.Write(request);
+            helper.bw.Flush();
+            txtSearchkey.Clear();
+        }
+
+        public void SearchCallBack(object sender, SearchCallBack callback)
+        {
+            MessageBoxResult mbr = MessageBox.Show(string.Format("是否要添加：\n用户：{0}\nID:{1}\n为好友", callback.UserName, callback.UserId), "是否添加为好友？", MessageBoxButton.OKCancel);
+            if (mbr == MessageBoxResult.OK)
+            {
+                AddContract add = new AddContract(LocalId, callback.UserId);
+                helper.bw.Write(string.Format("ADD@{0}", DataHelpers.XMLSer<AddContract>(add)));
+                helper.bw.Flush();
             }
         }
     }

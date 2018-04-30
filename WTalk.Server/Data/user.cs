@@ -17,5 +17,7 @@ namespace WTalk.Server.Data
 
         [StringLength(50)]
         public string Password { get; set; }
+
+        public int Id { get; set; }
     }
 }

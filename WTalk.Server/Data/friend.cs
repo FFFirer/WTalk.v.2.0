@@ -9,11 +9,12 @@ namespace WTalk.Server.Data
     [Table("wtalk.friends")]
     public partial class friend
     {
-        [Key]
         [StringLength(50)]
         public string UserId { get; set; }
 
         [StringLength(50)]
         public string FriendId { get; set; }
+
+        public int Id { get; set; }
     }
 }

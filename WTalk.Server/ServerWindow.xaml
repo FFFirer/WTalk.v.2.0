@@ -10,8 +10,8 @@
         <Button Name="btnStart" Content="开始监听" HorizontalAlignment="Left" Margin="400,10,0,0" VerticalAlignment="Top" Width="75" Click="btnStart_Click"/>
         <Button Name="btnStop" Content="停止监听" IsEnabled="False" HorizontalAlignment="Left" Margin="500,10,0,0" VerticalAlignment="Top" Width="75" Click="btnStop_Click"/>
         
-        <ListBox Name="listUser" HorizontalAlignment="Left" Height="231" Margin="10,34,0,0" VerticalAlignment="Top" Width="774" BorderThickness="2"/>
-        <ScrollViewer HorizontalAlignment="Left" Height="140" Margin="10,270,0,0" VerticalAlignment="Top" Width="774" BorderThickness="2">
+        <!--<ListBox Name="listUser" HorizontalAlignment="Left" Height="231" Margin="10,34,0,0" VerticalAlignment="Top" Width="774" BorderThickness="2"/>-->
+        <ScrollViewer HorizontalAlignment="Left" Height="370" Margin="10,40,0,0" VerticalAlignment="Top" Width="774" BorderThickness="2">
             <TextBlock Name="txtbMsg" TextWrapping="Wrap" Text="" Width="753"/>
         </ScrollViewer>
         <TextBox Name="txtPort" HorizontalAlignment="Left" Height="19" Margin="320,10,0,0" TextWrapping="Wrap" Text="51888" VerticalAlignment="Top" Width="60"/>

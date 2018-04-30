@@ -10,8 +10,7 @@ namespace WTalk.Server.Data
     public partial class waitforsending
     {
         [Key]
-        [StringLength(50)]
-        public string MsgId { get; set; }
+        public int MsgId { get; set; }
 
         [StringLength(50)]
         public string SendTime { get; set; }

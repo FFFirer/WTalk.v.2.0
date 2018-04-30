@@ -12,10 +12,10 @@ namespace WTalk.Server.CC
     {
         LoginCallBack Login(TcpClient client, LoginContract contract);
         SignUpCallBack Signup(SignupContract contract);
-        void Logout(LogoutContract contract);
+        void Logout(TcpClient client, LogoutContract contract);
         SearchCallBack Search(SearchContract contract);
         void Presence(PresenceMsg presence);
-        AddConfirm Add(AddContract contract);   //好友申请，向用户发送申请者ID，Name
+        AddComfirmArgs Add(AddContract contract);   //好友申请，向用户发送申请者ID，Name
         AddCallBack AddComfirm(AddConfirmCallBack callBack);    //好友申请确认，向申请者发送申请结果,并更新双方列表
     }
 }

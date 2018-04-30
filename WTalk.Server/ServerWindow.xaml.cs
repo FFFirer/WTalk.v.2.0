@@ -26,7 +26,7 @@ namespace WTalk.Server
     public partial class ServerWindow : Window
     {
         TCPHelper helper = null;
-        private List<UserOnServer> users = new List<UserOnServer>();
+        public List<UserOnServer> users = new List<UserOnServer>();
         public List<IP> IPList;
         public ServerWindow()
         {
@@ -36,6 +36,15 @@ namespace WTalk.Server
             cbbIP.ItemsSource = IPList;
             //DataHelpers.ShowHandler += ShowMsg;   //展示消息日志
             CC.DataHandle.ShowOnServerWindow += ShowMsg;
+            CC.DataHandle.AddHandler += Send2User;
+            TCPHelper.ExitHandler += RemoveUserFormList;
+            this.Closing += ServerWindow_Closing;
+        }
+
+        private void ServerWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            users.Clear();
+            CC.DataHandle.ClearPresence();
         }
 
         private void btnStart_Click(object sender, RoutedEventArgs e)
@@ -68,8 +77,8 @@ namespace WTalk.Server
             //
             //ServerUser user = new ServerUser(client);
             UserOnServer user = new UserOnServer(client);
-            user.helper.ExHandler += ShowMsg;
             users.Add(user);
+            user.helper.ExHandler += ShowMsg;
         }
 
         private void btnStop_Click(object sender, RoutedEventArgs e)
@@ -78,8 +87,26 @@ namespace WTalk.Server
             ShowMsg(null, "监听已停止");
             btnStart.IsEnabled = true;
             btnStop.IsEnabled = false;
+            CC.DataHandle.ClearPresence();
         }
 
+        public void RemoveUserFormList(object sender, string ip)
+        {
+            var u = users.Where(p => p.helper.tcpClient.Client.RemoteEndPoint.ToString().Equals(ip)).FirstOrDefault();
+            users.Remove(u);
+        }
+        public void Send2User(object sender, AddComfirmArgs args)
+        {
+            foreach(var u in users)
+            {
+                if(u.helper.tcpClient.Client.RemoteEndPoint.ToString() == args.IP)
+                {
+                    u.helper.SendMessage(string.Format("ADDCONFIRM@{0}", DataHelpers.XMLSer<AddConfirm>(args.comfirm)));
+                }
+            }
+        }
+
+        //获取本机所有适配器IP
         private void GetAllIPs()
         {
             NetworkInterface[] adapters = NetworkInterface.GetAllNetworkInterfaces();

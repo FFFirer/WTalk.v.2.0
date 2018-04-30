@@ -16,11 +16,12 @@ namespace WTalk.Server.CC
         public ServerHandle()
         {
             TCPHelper.ExitHandler += RemoveUser;
+            //model = new DataModel();
         }
-        public Data.DataModel model { get; set; }
+        //用户登陆
         public LoginCallBack Login(TcpClient client, LoginContract contract)
         {
-            using(model = new Data.DataModel())
+            using(var model = new Data.DataModel())
             {
                 LoginCallBack callback = new LoginCallBack();
                 var user = model.users.Where(p => p.UserId.Equals(contract.UserId)).FirstOrDefault();
@@ -33,7 +34,7 @@ namespace WTalk.Server.CC
                     var friends = model.friends.Where(p => p.UserId.Equals(user.UserId)).Select((p) => new User
                     {
                         UserId = p.FriendId,
-                        UserName = model.users.Where(q => q.UserId.Equals(p.UserId)).Select(q => q.UserName).FirstOrDefault(),
+                        UserName = model.users.Where(q => q.UserId.Equals(p.FriendId)).Select(q => q.UserName).FirstOrDefault(),
                         IsOnline = Status.Offline,
                         ip = "127.0.0.1"
                     }).ToList();
@@ -64,7 +65,7 @@ namespace WTalk.Server.CC
                         ReceiverId=p.ReceiverId
                     }).ToList();
                     //获取待同意好友申请
-                    var adds = model.addfriends.Where((p) => p.ReceiverId.Equals(contract.UserId)).Select((p) => new AddFriend {
+                    var adds = model.addfriends.Where((p) => p.ReceiverId.Equals(contract.UserId) && p.Status.Equals(Status.Waiting.ToString())).Select((p) => new AddFriend {
                         UserId = p.SenderId,
 
                     }).ToList();
@@ -72,7 +73,7 @@ namespace WTalk.Server.CC
                     model.SaveChanges();    //刷新数据库
                     return callback;
                 }
-                else
+                else 
                 {
                     List<User> friends = null;
                     List<TalkContract> talks = null;
@@ -82,45 +83,148 @@ namespace WTalk.Server.CC
                 }
             }
         }
+
+        //用户注册
         public SignUpCallBack Signup(SignupContract contract)
         {
             SignUpCallBack call = new SignUpCallBack();
-            return call;
+            string Id = string.Empty;
+            using (var model = new Data.DataModel())
+            {
+                //获取全局唯一的用户Id
+                while(true)
+                {
+                    Id = GetARandomId();
+                    var cf = model.users.Where(p => p.UserId.Equals(Id)).Count();
+                    if (cf <= 0)
+                    {
+                        break;
+                    }
+                }
+                //将用户ID插入数据库
+                try
+                {
+                    model.users.Add(new user { UserId = Id, UserName = contract.UserName, Password = contract.UserPwd });
+                    model.SaveChanges();
+                    call.status = Status.Yes;
+                    call.UserId = Id;
+                    call.MoreMsg = "注册成功！";
+                }
+                catch(Exception e)
+                {
+                    call.status = Status.No;
+                    call.UserId = null;
+                    call.MoreMsg = "注册失败:" + e.Message;
+                }
+                return call;
+            }
         }
-        public void Logout(LogoutContract contract)
+
+        public void Logout(TcpClient client, LogoutContract contract)
         {
+            //RemoveUser(null, client.Client.RemoteEndPoint.ToString());
             return;
         }
+
         public SearchCallBack Search(SearchContract contract)
         {
-            SearchCallBack call = new SearchCallBack();
-            return call;
+            using(var model = new Data.DataModel())
+            {
+                var user = model.users.Where(p => p.UserId.Equals(contract.UserId)).FirstOrDefault();
+                SearchCallBack callBack = new SearchCallBack(user.UserId, user.UserName);
+                return callBack;
+            }
         }
         public void Presence(PresenceMsg presence)
         {
             return;
         }
         //好友申请，向用户发送申请者ID，Name
-        public AddConfirm Add(AddContract contract)
+        public AddComfirmArgs Add(AddContract contract)
         {
-            AddConfirm call = new AddConfirm();
-            return call;
+            AddConfirm call = null;
+            AddComfirmArgs args = null;
+            using (var model = new Data.DataModel())
+            {
+                try
+                {
+                    model.addfriends.Add(new addfriend { TIme = DataHelpers.GetTimeStamp(), SenderId = contract.SenderId, ReceiverId = contract.ReveiveId, Status = Status.Waiting.ToString() });
+                    var user = model.presenceusers.Where(p => p.UserId.Equals(contract.ReveiveId)).FirstOrDefault();
+                    var sender = model.users.Where(p => p.UserId.Equals(contract.SenderId)).FirstOrDefault();
+                    if (user != null)
+                    {
+                        call = new AddConfirm(sender.UserId, sender.UserName);
+                        args = new AddComfirmArgs(call, user.IPAddress);
+                    }
+                    else
+                    {
+                        call = new AddConfirm(contract.SenderId, "未知");
+                        args = new AddComfirmArgs(call, "Offline");
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw e;
+                }
+                
+                var a = model.SaveChanges();
+                return args;
+            }
         }
+
         //好友申请确认，向申请者发送申请结果,并更新双方列表
         public AddCallBack AddComfirm(AddConfirmCallBack callBack)
         {
-            AddCallBack call = new AddCallBack();
-            return call;
+            AddCallBack call = null;
+            using(var model = new Data.DataModel())
+            {
+                var s = model.addfriends.Where(p => p.SenderId.Equals(callBack.SenderId) && p.ReceiverId.Equals(callBack.ReceiveId)).Select(p=>p).FirstOrDefault();
+                //将好友申请操作列表里的所有两方的操作状态全部改成与申请返回的值一样的
+                s.Status = callBack.status.ToString();
+                model.Entry(s).State = System.Data.Entity.EntityState.Modified;
+
+                if (callBack.status.ToString() == Status.Agree.ToString())
+                {
+                    friend f1 = new friend { UserId = callBack.SenderId, FriendId = callBack.ReceiveId };
+                    friend f2 = new friend { UserId = callBack.ReceiveId, FriendId = callBack.SenderId };
+                    model.friends.Add(f1);
+                    model.friends.Add(f2);
+                }
+                var a = model.SaveChanges();
+                return call;
+            }
         }
 
         //当用户掉线或推出时，将用户从出席服务中移除
         public void RemoveUser(object sender, string IP)
         {
-            using(model = new Data.DataModel())
+            using(var model = new Data.DataModel())
             {
                 model.presenceusers.Remove(model.presenceusers.Where(p => p.IPAddress.Equals(IP)).FirstOrDefault());
                 model.SaveChanges();
             }
         }
+
+        #region 一些要用到的重复的方法
+        public string GetARandomId()
+        {
+            Random random = new Random();
+            int res = random.Next(999999, 9999999);
+            return res.ToString();
+        }
+
+        //清楚在线列表
+        public void RefreshAll()
+        {
+            using(var model = new DataModel())
+            {
+                foreach(var user in model.presenceusers)
+                {
+                    model.presenceusers.Remove(user);
+                }
+                model.SaveChanges();
+            }
+        }
+        #endregion
     }
 }

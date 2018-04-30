@@ -9,7 +9,6 @@ namespace WTalk.Server.Data
     [Table("wtalk.presenceusers")]
     public partial class presenceuser
     {
-        [Key]
         [StringLength(50)]
         public string UserId { get; set; }
 
@@ -21,5 +20,7 @@ namespace WTalk.Server.Data
 
         [StringLength(50)]
         public string Status { get; set; }
+
+        public int Id { get; set; }
     }
 }

@@ -9,7 +9,6 @@ namespace WTalk.Server.Data
     [Table("wtalk.addfriends")]
     public partial class addfriend
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int Id { get; set; }
 
         [StringLength(45)]
@@ -21,7 +20,7 @@ namespace WTalk.Server.Data
         [StringLength(45)]
         public string ReceiverId { get; set; }
 
-        [Column(TypeName = "binary")]
-        public byte[] Status { get; set; }
+        [StringLength(45)]
+        public string Status { get; set; }
     }
 }

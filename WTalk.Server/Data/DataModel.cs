@@ -8,7 +8,7 @@ namespace WTalk.Server.Data
     public partial class DataModel : DbContext
     {
         public DataModel()
-            : base("name=DataModel3")
+            : base("name=DataModel")
         {
         }
 
@@ -30,6 +30,10 @@ namespace WTalk.Server.Data
 
             modelBuilder.Entity<addfriend>()
                 .Property(e => e.ReceiverId)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<addfriend>()
+                .Property(e => e.Status)
                 .IsUnicode(false);
 
             modelBuilder.Entity<friend>()
@@ -66,10 +70,6 @@ namespace WTalk.Server.Data
 
             modelBuilder.Entity<user>()
                 .Property(e => e.Password)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<waitforsending>()
-                .Property(e => e.MsgId)
                 .IsUnicode(false);
 
             modelBuilder.Entity<waitforsending>()

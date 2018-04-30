@@ -33,6 +33,7 @@ namespace WTalk.Client
         {
             InitializeComponent();
             Connect();
+            CC.DataHandle.SignupHandler += SignupHandle;
         }
 
         private void btnLogin_Click(object sender, RoutedEventArgs e)
@@ -57,7 +58,9 @@ namespace WTalk.Client
             Connect();
             if (Pwd.Password == Pwd2.Password && Pwd.Password != "" & txtName.Text != null)
             {
-                helper.SendMessage(string.Format("SIGNUP@user:{0},pwd:{1}", txtName.Text.Trim(), Pwd.Password.Trim()));
+                SignupContract signupContract = new SignupContract(txtName.Text.Trim(), Pwd.Password.Trim());
+                //helper.SendMessage(string.Format("SIGNUP@user:{0},pwd:{1}", txtName.Text.Trim(), Pwd.Password.Trim()));
+                helper.SendMessage(string.Format("SIGNUP@{0}", DataHelpers.XMLSer<SignupContract>(signupContract)));
             }
             else
             {
@@ -79,7 +82,7 @@ namespace WTalk.Client
                 {
                     App.Current.Dispatcher.Invoke(() =>
                     {
-                        ClientWindow cw = new ClientWindow(helper, data.UsersInfo, data.Talks, data.AddFriends);
+                        ClientWindow cw = new ClientWindow(helper, data.UsersInfo, data.Talks, data.AddFriends, txtId.Text.Trim());
                         cw.Show();
                         this.Close();
                     });
@@ -130,6 +133,20 @@ namespace WTalk.Client
             int port = Convert.ToInt32(txtPort.Text.Trim());
             helper = new TCPHelper(IPAddress.Parse(Ip), port);
             MessageBox.Show("设置成功！");
+        }
+        //触发注册回调
+        public void SignupHandle(object sender, SignUpCallBack callBack)
+        {
+            string res = string.Empty;
+            if (callBack.status == Status.Yes)
+            {
+                res = string.Format("{0}\nID：{1}\n记住ID以登陆账户", callBack.MoreMsg, callBack.UserId);
+            }
+            else
+            {
+                res = callBack.MoreMsg;
+            }
+            ShowMsg(null, res);
         }
     }
 }

@@ -85,11 +85,13 @@ namespace WTalk.Domain
     //添加好友
     public class AddContract
     {
-        public string UserId { get; set; }
+        public string SenderId { get; set; }
+        public string ReveiveId { get; set; }
         public AddContract() { }
-        public AddContract(string id)
+        public AddContract(string sender, string receiver)
         {
-            this.UserId = id;
+            this.SenderId = sender;
+            this.ReveiveId = receiver;
         }
     }
     //删除好友
@@ -119,12 +121,14 @@ namespace WTalk.Domain
     //添加好友确认回调
     public class AddConfirmCallBack
     {
-        public string UserId { get; set; }
+        public string SenderId { get; set; }
+        public string ReceiveId { get; set; }
         public Status status { get; set; }
         public AddConfirmCallBack() { }
-        public AddConfirmCallBack(string id, Status status)
+        public AddConfirmCallBack(string id, string receiveid, Status status)
         {
-            this.UserId = id;
+            this.SenderId = id;
+            this.ReceiveId = receiveid;
             this.status = status;
         }
     }
@@ -137,7 +141,8 @@ namespace WTalk.Domain
         Add = 4,
         Remove = 5,
         Agree = 6,
-        DisAgree = 7
+        DisAgree = 7,
+        Waiting = 8
     }
     #endregion
 
@@ -195,11 +200,13 @@ namespace WTalk.Domain
     //搜索回调
     public class SearchCallBack
     {
-        public List<User> Users { get; set; }
+        public string UserId { get; set; }
+        public string UserName { get; set; }
         public SearchCallBack() { }
-        public SearchCallBack(List<User> users)
+        public SearchCallBack(string id, string name)
         {
-            this.Users = users;
+            this.UserId = id;
+            this.UserName = name;
         }
     }
     //添加好友回调
@@ -233,4 +240,16 @@ namespace WTalk.Domain
         public User user { get; set; }
     }
     #endregion
+
+    public class AddComfirmArgs
+    {
+        public AddConfirm comfirm { get; set; }
+        public string IP { get; set; }
+        public AddComfirmArgs() { }
+        public AddComfirmArgs(AddConfirm comfirm, string ip)
+        {
+            this.comfirm = comfirm;
+            this.IP = ip;
+        }
+    }
 }

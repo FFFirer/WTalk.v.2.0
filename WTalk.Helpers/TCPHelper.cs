@@ -97,7 +97,7 @@ namespace WTalk.Helpers
                     //throw e;
                     if(ExHandler != null)
                     {
-                        ExHandler(null, string.Format("{0}-->已经掉线", tcpClient.Client.RemoteEndPoint.ToString()));
+                        ExHandler(null, string.Format("{0}-->已经离线", tcpClient.Client.RemoteEndPoint.ToString()));
                         ExitHandler(null, tcpClient.Client.RemoteEndPoint.ToString());
                     }
                     return;
