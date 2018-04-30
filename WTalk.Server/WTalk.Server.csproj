@@ -111,6 +111,7 @@
     </Compile>
     <Compile Include="CC\DataHandle.cs" />
     <Compile Include="UserOnServer.cs" />
+    <Compile Include="ViewModels\ClientViewMOdel.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

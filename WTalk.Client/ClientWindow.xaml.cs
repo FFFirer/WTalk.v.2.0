@@ -98,10 +98,18 @@ namespace WTalk.Client
 
         private void WrapPanel_MouseMove(object sender, MouseEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Pressed)
+            try
             {
-                this.DragMove();
+                if (e.LeftButton == MouseButtonState.Pressed)
+                {
+                    this.DragMove();
+                }
             }
+            catch
+            {
+                return;
+            }
+            
         }
 
         int i = 0;
@@ -153,11 +161,22 @@ namespace WTalk.Client
             {
                 MessageBox.Show("请输入正确的用户ID！");
             }
-            SearchContract search = new SearchContract(key);
-            string request = string.Format("SEARCH@{0}", DataHelpers.XMLSer<SearchContract>(search));
-            helper.bw.Write(request);
-            helper.bw.Flush();
-            txtSearchkey.Clear();
+            if(key == LocalId)
+            {
+                MessageBox.Show("不能添加自己");
+            }
+            else if(Users.Where(p=>p.UserId.Equals(key)).Count() > 0)
+            {
+                MessageBox.Show("你已添加这名好友");
+            }
+            else
+            {
+                SearchContract search = new SearchContract(key);
+                string request = string.Format("SEARCH@{0}", DataHelpers.XMLSer<SearchContract>(search));
+                helper.bw.Write(request);
+                helper.bw.Flush();
+                txtSearchkey.Clear();
+            }
         }
 
         public void SearchCallBack(object sender, SearchCallBack callback)
