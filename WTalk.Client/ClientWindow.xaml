@@ -5,8 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WTalk.Client"
         mc:Ignorable="d"
-        MouseMove="WrapPanel_MouseMove"
-        Title="WTalk" Height="450" Width="808" MinWidth="600" MinHeight="600" WindowStyle="None">
+        Title="WTalk" Height="450" Width="808" MinWidth="600" MinHeight="600">
+    <Window.Resources>
+        <local:WaitShowConverter x:Key="wsConverter"/>
+        <Style TargetType="ListBoxItem">
+            <Setter Property="Tag" Value="{Binding RelativeSource={RelativeSource Self}, Path=SenderId}"/>
+        </Style>
+    </Window.Resources>
     <Grid x:Name="grid">
         <Grid.RowDefinitions>
             <RowDefinition Height="30"/>
@@ -17,23 +22,32 @@
             <ColumnDefinition Width="200"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <WrapPanel Grid.ColumnSpan="3" Grid.Row="0" Height="30" MouseDown="WrapPanel_MouseDown" HorizontalAlignment="Right">
+        <!--<WrapPanel Grid.ColumnSpan="3" Grid.Row="0" Height="30" MouseDown="WrapPanel_MouseDown" HorizontalAlignment="Right">
             <Button x:Name="btnMin" HorizontalAlignment="Right" Margin="0,0,0,0" Content="—" Click="btnMin_Click" Width="30" Height="30" Background="White" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"/>
             <Button x:Name="btnMax" HorizontalAlignment="Right" Margin="0,0,0,0" Content="口" Click="btnMax_Click" Width="30" Height="30" Background="White" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"/>
             <Button x:Name="btnClose" HorizontalAlignment="Right" Margin="0,0,0,0" Content="X" Click="btnClose_Click" Width="30" Height="30" Background="White" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"/>
-        </WrapPanel>
+        </WrapPanel>-->
         <WrapPanel Grid.Row="0" Grid.Column="1">
             <TextBox Name="txtSearchkey" DockPanel.Dock="Left" Width="167" VerticalContentAlignment="Center" Margin="3,3,0,3"/>
             <Button Name="btnSearch" DockPanel.Dock="Left" Content="+" FontSize="18" Width="24" Height="24" HorizontalContentAlignment="Center" Margin="3" Padding="0" Click="btnSearch_Click"/>
         </WrapPanel>
         <Label Name="lblID" Content="聊天对象名聊天对象名聊天对象名聊" Grid.Column="2" Grid.Row="0" VerticalContentAlignment="Center" FontSize="16"  HorizontalAlignment="Left" Margin="0,0,0,0.4" Padding="7,0,0,0" Width="270" ScrollViewer.VerticalScrollBarVisibility="Hidden"/>
         <Border x:Name="border" Grid.Row="1" Grid.ColumnSpan="3">
-            <TabControl Grid.Row="1" Grid.ColumnSpan="3" TabStripPlacement="Left" HorizontalAlignment="Left" Margin="0" Padding="0" Height="{Binding Height, ElementName=border}" Width="{Binding ActualWidth, ElementName=grid, Mode=OneWay}" >
+            <TabControl Name="tabMain" Grid.Row="1" Grid.ColumnSpan="3" TabStripPlacement="Left" HorizontalAlignment="Left" Margin="0" Padding="0" Height="{Binding Height, ElementName=border}" Width="{Binding ActualWidth, ElementName=grid, Mode=OneWay}" >
                 <TabItem Height="98" Width="30" Padding="0" Margin="0" BorderBrush="White">
                     <TabItem.Header>
-                        <TextBlock Width="30" Height="90" Text="聊天" TextWrapping="Wrap" FontSize="20" Padding="5,20" />
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="60"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="1" Width="30" Text="聊天" TextWrapping="Wrap" FontSize="20" Padding="5"/>
+                            <Ellipse Name="ellChat" Visibility="{Binding Path=AllChatWaitReads, Converter={StaticResource wsConverter}}" Grid.Row="2"  Fill="Red" Width="7" Height="7" Margin="2"/>
+                        </Grid>
                     </TabItem.Header>
-                    <Grid>
+                    <Grid x:Name="gChat">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="200"/>
                             <ColumnDefinition Width="*"/>
@@ -44,31 +58,94 @@
                             <RowDefinition Height="147*"/>
                             <RowDefinition Height="100"/>
                         </Grid.RowDefinitions>
-                        <ListBox Grid.Column="0" Grid.RowSpan="4">
+                        <!--聊天列表-->
+                        <ListBox Name="listChat" Grid.Column="0" Grid.RowSpan="4" ItemsSource="{Binding}" IsSynchronizedWithCurrentItem="True" MouseLeftButtonDown="listChat_MouseLeftButtonDown" MouseRightButtonDown="listChat_MouseRightButtonDown">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Margin="0,5,0,5" Padding="5" FontSize="16" Text="{Binding Path=SenderName}">
+                                        <Ellipse Visibility="{Binding Path=WaitReadNum, Converter={StaticResource wsConverter}, Mode=OneWay}" Fill="Red" Width="7" Height="7" Margin="2" />
 
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                            <ListBox.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Name="menu" Header="删除" Click="menu_Click"/>
+                                </ContextMenu>
+                            </ListBox.ContextMenu>
                         </ListBox>
-                        <ListBox Grid.Column="1" Grid.Row="0" Grid.RowSpan="3">
-
+                        <ListBox Name="MainChat" Grid.Column="1" Grid.Row="0" Grid.RowSpan="3" IsSynchronizedWithCurrentItem="True" >
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Margin="0,5,0,5" Padding="5" FontSize="16" Text="{Binding Path=SenderName}">
+                                        : <TextBlock Text="{Binding Path=Msg}"/>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
                         </ListBox>
-                        <TextBlock Grid.Column="1" Grid.Row="3" Margin="0,0,0,30">
+                        <TextBox Name="txtSend" TextWrapping="Wrap" Grid.Column="1" Grid.Row="3" Margin="0,0,0,30">
 
-                        </TextBlock>
-                        <Button Content="发送" Grid.Column="1" Grid.Row="3" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,5,5" Width="70"/>
-                        <Button Content="取消" Grid.Column="1" Grid.Row="3" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,85,5" Width="70"/>
+                        </TextBox>
+                        <Button Name="btnSend" Content="发送" Grid.Column="1" Grid.Row="3" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,5,5" Width="70" Click="btnSend_Click"/>
+                        <Button Name='btnCancel' Content="取消" Grid.Column="1" Grid.Row="3" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,85,5" Width="70" Click="btnCancel_Click"/>
 
                     </Grid>
                 </TabItem>
                 <TabItem Height="98" Width="30" Padding="0" Margin="0">
                     <TabItem.Header>
-                        <TextBlock Width="30" Height="90" Text="好友" TextWrapping="Wrap" FontSize="20" Padding="5,20"/>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="60"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="1" Width="30" Text="好友" TextWrapping="Wrap" FontSize="20" Padding="5"/>
+                            <Ellipse Name="ellFriend" Visibility="{Binding Path=AllFriendWaitReads, Converter={StaticResource wsConverter}}" Grid.Row="2"  Fill="Red" Width="7" Height="7" Margin="2"/>
+                        </Grid>
                     </TabItem.Header>
-                    <Grid>
+                    <Grid x:Name="gFriend">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="200"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <ListBox Grid.Column="0">
-
+                        <!--好友列表-->
+                        <ListBox Grid.Column="0"  ItemsSource="{Binding}" IsSynchronizedWithCurrentItem="True">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Margin="0,5,0,5" Padding="5" FontSize="16" Text="{Binding Path=UserId}">
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                </TabItem>
+                <TabItem Height="98" Width="30" Padding="0" Margin="0">
+                    <TabItem.Header>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="60"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="1" Width="30" Text="通知" TextWrapping="Wrap" FontSize="20" Padding="5"/>
+                            <Ellipse Name="ellNotice" Visibility="{Binding Path=AllNoticeWaitReads, Converter={StaticResource wsConverter}}" Grid.Row="2"  Fill="Red" Width="7" Height="7" Margin="2"/>
+                        </Grid>
+                    </TabItem.Header>
+                    <Grid x:Name="gNotice">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <!--通知列表-->
+                        <ListBox Grid.Column="0"  ItemsSource="{Binding}" IsSynchronizedWithCurrentItem="True">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Margin="0,5,0,5" Padding="5" FontSize="16" Text="{Binding Path=UserId}">
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
                         </ListBox>
                     </Grid>
                 </TabItem>

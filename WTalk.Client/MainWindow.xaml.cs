@@ -17,6 +17,7 @@ using WTalk.Helpers;
 using System.Net.Sockets;
 using System.IO;
 using System.Net;
+using WTalk.Client.ViewModels;
 
 namespace WTalk.Client
 {
@@ -78,6 +79,7 @@ namespace WTalk.Client
             if(data.LoginStatus == Status.Yes)
             {
                 MessageBoxResult result = MessageBox.Show("登陆成功");
+                
                 if (result == MessageBoxResult.OK)
                 {
                     App.Current.Dispatcher.Invoke(() =>

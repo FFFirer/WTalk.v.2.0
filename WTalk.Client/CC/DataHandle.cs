@@ -92,5 +92,6 @@ namespace WTalk.Client.CC
             string[] res = data.Split('@');
             return res;
         }
+        
     }
 }

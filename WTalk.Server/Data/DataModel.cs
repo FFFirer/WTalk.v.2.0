@@ -8,7 +8,7 @@ namespace WTalk.Server.Data
     public partial class DataModel : DbContext
     {
         public DataModel()
-            : base("name=DataModel")
+            : base("name=DataModel1")
         {
         }
 
