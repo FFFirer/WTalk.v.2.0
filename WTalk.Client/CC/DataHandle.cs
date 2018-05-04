@@ -14,6 +14,8 @@ namespace WTalk.Client.CC
         public static event EventHandler<SignUpCallBack> SignupHandler; //注册事件
         public static event EventHandler<SearchCallBack> SearchHandler; //查找事件
         public static event EventHandler<AddConfirm> AddComfirmHandler; //好友申请事件
+        public static event EventHandler<User> UpdateFriendHandler;     //好友添加事件
+        public static event EventHandler<RemoveContract> RemoveFriendHandler;   //好友删除事件
 
         public static void Handle(object sender, string data)
         {
@@ -65,6 +67,11 @@ namespace WTalk.Client.CC
                     }
                     break;
                 case "ADDCALLBACK":
+                    User user = DataHelpers.DeXMLSer<User>(d[1]);
+                    if(UpdateFriendHandler != null)
+                    {
+                        UpdateFriendHandler(null, user);
+                    }
                     break;
                 case "ADDCONFIRM":
                     try
@@ -80,7 +87,20 @@ namespace WTalk.Client.CC
                         break;
                     }
                     break;
-                case "UPDATEFRIENDS":
+                case "REMOVE":
+                    RemoveContract remove = null;
+                    try
+                    {
+                        remove = DataHelpers.DeXMLSer<RemoveContract>(d[1]);
+                        if(RemoveFriendHandler != null)
+                        {
+                            RemoveFriendHandler(null, remove);
+                        }
+                    }
+                    catch(Exception e)
+                    {
+                        throw e;
+                    }
                     break;
                 default:
                     break;

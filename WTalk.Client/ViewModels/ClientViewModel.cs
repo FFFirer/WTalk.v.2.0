@@ -123,10 +123,40 @@ namespace WTalk.Client.ViewModels
     }
 
     //好友申请通知
-    public class Notice
+    public class Notice : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void Notify(string propName)
+        {
+            if (this.PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propName));
+            }
+        }
+        
         public string UserId { get; set; }
-        public string UserName { get; set; }
-        public Status status { get; set; }
+
+        private string username { get; set; }
+        public string UserName
+        {
+            get { return username; }
+            set
+            {
+                if(this.username ==value) { return; }
+                this.username = value;
+                Notify("username");
+            }
+        }
+        private Status pstatus { get; set; }
+        public Status status
+        {
+            get { return this.pstatus; }
+            set
+            {
+                if(this.pstatus == value) { return; }
+                this.pstatus = value;
+                Notify("status");
+            }
+        }
     }
 }

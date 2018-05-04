@@ -120,12 +120,14 @@ namespace WTalk.Server.CC
             }
         }
 
+        //用户登出（已弃用）
         public void Logout(TcpClient client, LogoutContract contract)
         {
             //RemoveUser(null, client.Client.RemoteEndPoint.ToString());
             return;
         }
 
+        //搜索
         public SearchCallBack Search(SearchContract contract)
         {
             using(var model = new Data.DataModel())
@@ -135,10 +137,13 @@ namespace WTalk.Server.CC
                 return callBack;
             }
         }
+
+        //出席
         public void Presence(PresenceMsg presence)
         {
             return;
         }
+
         //好友申请，向用户发送申请者ID，Name
         public AddComfirmArgs Add(AddContract contract)
         {
@@ -189,6 +194,27 @@ namespace WTalk.Server.CC
                     friend f2 = new friend { UserId = callBack.ReceiveId, FriendId = callBack.SenderId };
                     model.friends.Add(f1);
                     model.friends.Add(f2);
+                    //call.status = Status.Yes;
+                    var sender = model.users.Where(p => p.UserId.Equals(callBack.SenderId)).FirstOrDefault();
+                    var senderPre = model.presenceusers.Where(p => p.UserId.Equals(callBack.SenderId)).FirstOrDefault();
+                    var receiver = model.users.Where(p => p.UserId.Equals(callBack.ReceiveId)).FirstOrDefault();
+                    var receiverPre = model.presenceusers.Where(p => p.UserId.Equals(callBack.ReceiveId)).FirstOrDefault();
+                    call = new AddCallBack
+                    {
+                        Sender = new User { UserId = sender.UserId, UserName = sender.UserName, ip = "127.0.0.1", IsOnline = Status.Offline },
+                        Receiver = new User { UserId = receiver.UserId, UserName = receiver.UserName, ip = "127.0.0.1", IsOnline = Status.Offline },
+                        status = Status.Yes
+                    };
+                    if(senderPre != null)
+                    {
+                        call.Sender.ip = senderPre.IPAddress;
+                        call.Sender.IsOnline = Status.Online;
+                    }
+                    if(receiverPre != null)
+                    {
+                        call.Receiver.ip = receiverPre.IPAddress;
+                        call.Receiver.IsOnline = Status.Online;
+                    }
                 }
                 var a = model.SaveChanges();
                 return call;
@@ -205,6 +231,16 @@ namespace WTalk.Server.CC
             }
         }
 
+        //删除好友
+        public void RemoveFriends(RemoveContract remove)
+        {
+            using(var model = new DataModel())
+            {
+                model.friends.Remove(model.friends.Where(P => P.UserId.Equals(remove.FriendId) && P.FriendId.Equals(remove.UserId)).FirstOrDefault());
+                model.friends.Remove(model.friends.Where(P => P.FriendId.Equals(remove.FriendId) && P.UserId.Equals(remove.UserId)).FirstOrDefault());
+                model.SaveChanges();
+            }
+        }
         #region 一些要用到的重复的方法
         public string GetARandomId()
         {

@@ -65,7 +65,7 @@ namespace WTalk.Client
             }
             foreach(var n in addFriends)
             {
-                notices.Add(new Notice { UserId = n.UserId, UserName = "DDD" });
+                notices.Add(new Notice { UserId = n.UserId, UserName = "DDD", status = Status.Waiting });
             }
             
             foreach(var c in chats)
@@ -79,8 +79,10 @@ namespace WTalk.Client
 
             InitializeComponent();
             this.Closing += ClientWindow_Closing;
+            CC.DataHandle.UpdateFriendHandler += DataHandle_UpdateFriendHandler;
             CC.DataHandle.SearchHandler += SearchCallBack;
             CC.DataHandle.AddComfirmHandler += AddComfimCallback;
+            CC.DataHandle.RemoveFriendHandler += DataHandle_RemoveFriendHandler;
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
             this.lblID.Content = LocalId;
             this.helper = helper;
@@ -93,24 +95,33 @@ namespace WTalk.Client
 
             this.listChat.AddHandler(UIElement.MouseDownEvent, new MouseButtonEventHandler(listChat_MouseLeftButtonDown), true);
             this.listChat.AddHandler(UIElement.MouseDownEvent, new MouseButtonEventHandler(listChat_MouseRightButtonDown), true);
+            this.listNotice.AddHandler(UIElement.MouseDownEvent, new MouseButtonEventHandler(listNotice_MouseLeftButtonDown), true);
+        }
+
+        //删除好友
+        private void DataHandle_RemoveFriendHandler(object sender, RemoveContract e)
+        {
+            this.friends.Remove(friends.Where(p => p.UserId.Equals(e.UserId)).FirstOrDefault());
+        }
+
+        private void DataHandle_UpdateFriendHandler(object sender, User e)
+        {
+            Friend newfriend = new Friend
+            {
+                UserId = e.UserId,
+                UserName = e.UserName,
+                IP = e.ip,
+                status = e.IsOnline
+            };
+            friends.Add(newfriend);
         }
 
         //好友确认回调
         private void AddComfimCallback(object sender, AddConfirm e)
         {
-            MessageBoxResult mb = MessageBox.Show(string.Format("用户:{0}\nID:{1}\n", e.UserName, e.UserId), "好友申请", MessageBoxButton.OKCancel);
-            AddConfirmCallBack accb = new AddConfirmCallBack();
-            accb.SenderId = e.UserId;
-            accb.ReceiveId = LocalId;
-            if (mb == MessageBoxResult.OK)
-            {
-                accb.status = Status.Agree;
-            }
-            else
-            {
-                accb.status = Status.DisAgree;
-            }
-            helper.SendMessage(string.Format("ADDCONFIRMCALLBACK@{0}", DataHelpers.XMLSer<AddConfirmCallBack>(accb)));
+            this.model.AllNoticeWaitReads += 1; //通知数加一
+            Notice notice = new Notice { UserId = e.UserId, UserName = e.UserName, status = Status.Waiting };
+            notices.Add(notice);
         }
         //窗口关闭
         private void ClientWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -123,7 +134,7 @@ namespace WTalk.Client
             }
         }
 
-        //#region 自定义标题栏
+        #region 自定义标题栏
         //private void WrapPanel_MouseMove(object sender, MouseEventArgs e)
         //{
         //    try
@@ -173,7 +184,7 @@ namespace WTalk.Client
         //        this.WindowState = WindowState.Maximized;
         //    }
         //}
-        //#endregion
+        #endregion
 
         //好友查找添加
         private void btnSearch_Click(object sender, RoutedEventArgs e)
@@ -306,6 +317,68 @@ namespace WTalk.Client
         private void Removethis_Click(object sender, RoutedEventArgs e)
         {
             throw new NotImplementedException();
+        }
+
+        public void listNotice_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if(listNotice.SelectedIndex == -1)
+            {
+                return;
+            }
+            Notice notice = (Notice)listNotice.SelectedItem;
+            //NoticeDetail.DataContext = notice;
+            if(notice.status == Status.Waiting)
+            {
+                MessageBoxResult mb = MessageBox.Show(string.Format("用户:{0}\nID:{1}\n", notice.UserName, notice.UserId), "好友申请", MessageBoxButton.OKCancel);
+                AddConfirmCallBack accb = new AddConfirmCallBack();
+                accb.SenderId = notice.UserId;
+                accb.ReceiveId = LocalId;
+                if (mb == MessageBoxResult.OK)
+                {
+                    accb.status = Status.Agree;
+                    notice.status = Status.Agree;
+                    model.AllNoticeWaitReads -= 1;
+                }
+                else
+                {
+                    accb.status = Status.DisAgree;
+                    notice.status = Status.DisAgree;
+                    model.AllNoticeWaitReads -= 1;
+                }
+                helper.SendMessage(string.Format("ADDCONFIRMCALLBACK@{0}", DataHelpers.XMLSer<AddConfirmCallBack>(accb)));
+            }
+            else
+            {
+                MessageBox.Show("已经操作过了");
+            }
+        }
+
+        //同意按钮
+        public void btnAgree_Click(object sender, RoutedEventArgs e)
+        {
+            Notice notice = (Notice)listNotice.SelectedItem;
+            AddConfirmCallBack addConfirmCallBack = new AddConfirmCallBack(notice.UserId, LocalId, Status.Agree);
+            string request = string.Format("ADDCONFIRMCALLBACK@{0}", DataHelpers.XMLSer<AddConfirmCallBack>(addConfirmCallBack));
+            helper.bw.Write(request);
+            helper.bw.Flush();
+        }
+        //拒绝按钮
+        public void btnDisAgree_Click(object sender, RoutedEventArgs e)
+        {
+            Notice notice = (Notice)listNotice.SelectedItem;
+            AddConfirmCallBack addConfirmCallBack = new AddConfirmCallBack(notice.UserId, LocalId, Status.DisAgree);
+            string request = string.Format("ADDCONFIRMCALLBACK@{0}", DataHelpers.XMLSer<AddConfirmCallBack>(addConfirmCallBack));
+            helper.bw.Write(request);
+            helper.bw.Flush();
+        }
+        //删除好友
+        private void mDelFriend_Click(object sender, RoutedEventArgs e)
+        {
+            Friend friend = (Friend)this.listFriend.SelectedItem;
+            friends.Remove(friend);
+            //向服务器发送删除好友请求
+            RemoveContract removeContract = new RemoveContract(LocalId, friend.UserId);
+            helper.SendMessage(string.Format("REMOVE@{0}", DataHelpers.XMLSer<RemoveContract>(removeContract)));
         }
     }
 }

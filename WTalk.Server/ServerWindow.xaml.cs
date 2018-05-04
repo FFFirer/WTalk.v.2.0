@@ -36,9 +36,21 @@ namespace WTalk.Server
             cbbIP.ItemsSource = IPList;
             //DataHelpers.ShowHandler += ShowMsg;   //展示消息日志
             CC.DataHandle.ShowOnServerWindow += ShowMsg;
+            CC.DataHandle.LoginHandler += Register; 
+            CC.DataHandle.UpdateFriendListHandler += Update; //向在线用户更新好友列表
             CC.DataHandle.AddHandler += Send2User;
             TCPHelper.ExitHandler += RemoveUserFormList;
             this.Closing += ServerWindow_Closing;
+            CC.DataHandle.RemoveFriendHandler += DataHandle_RemoveFriendHandler; ;    //删除好友事件
+        }
+
+        private void DataHandle_RemoveFriendHandler(object sender, RemoveContract e)
+        {
+            var user = users.Where(p => p.UserId.Equals(e.FriendId)).FirstOrDefault();
+            if(user != null)
+            {
+                user.helper.SendMessage(string.Format("REMOVE@{0}", DataHelpers.XMLSer<RemoveContract>(e)));
+            }
         }
 
         private void ServerWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -95,6 +107,7 @@ namespace WTalk.Server
             var u = users.Where(p => p.helper.tcpClient.Client.RemoteEndPoint.ToString().Equals(ip)).FirstOrDefault();
             users.Remove(u);
         }
+
         public void Send2User(object sender, AddComfirmArgs args)
         {
             foreach(var u in users)
@@ -127,6 +140,36 @@ namespace WTalk.Server
                 
             }
             cbbIP.SelectedIndex = 0;
+        }
+
+        public void Update(object sender, AddCallBack callBack)
+        {
+            if(callBack.Sender.IsOnline==Status.Online)
+            {
+                var receiver = users.Where(p => p.UserId.Equals(callBack.Receiver.UserId)).FirstOrDefault();
+                if(receiver.helper != null)
+                {
+                    receiver.helper.SendMessage(string.Format("ADDCALLBACK@{0}", DataHelpers.XMLSer<User>(callBack.Sender)));
+                }
+            }
+            if (callBack.Receiver.IsOnline == Status.Online)
+            {
+                var user = users.Where(p => p.UserId.Equals(callBack.Sender.UserId)).FirstOrDefault();
+                if (user.helper != null)
+                {
+                    user.helper.SendMessage(string.Format("ADDCALLBACK@{0}", DataHelpers.XMLSer<User>(callBack.Receiver)));
+                }
+            }
+        }
+
+        //为登陆用户添加Id
+        public void Register(object sender, UserArgs args)
+        {
+            var user = users.Where(p => p.helper.tcpClient.Client.RemoteEndPoint.ToString().Equals(args.IP)).FirstOrDefault();
+            if(user != null)
+            {
+                user.UserId = args.Id;
+            }
         }
         
     }

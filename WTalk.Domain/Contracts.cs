@@ -98,10 +98,12 @@ namespace WTalk.Domain
     public class RemoveContract
     {
         public string UserId { get; set; }
+        public string FriendId { get; set; }
         public RemoveContract() { }
-        public RemoveContract(string id)
+        public RemoveContract(string id, string friend)
         {
             this.UserId = id;
+            this.FriendId = friend;
         }
     }
     //聊天消息
@@ -212,12 +214,14 @@ namespace WTalk.Domain
     //添加好友回调
     public class AddCallBack
     {
-        public string UserId { get; set; }
+        public User Sender { get; set; }
+        public User Receiver { get; set; }
         public Status status { get; set; }
         public AddCallBack() { }
-        public AddCallBack(string id, Status status)
+        public AddCallBack(User sender, User receiver, Status status)
         {
-            this.UserId = id;
+            this.Sender = sender;
+            this.Receiver = receiver;
             this.status = status;
         }
     }
@@ -251,5 +255,11 @@ namespace WTalk.Domain
             this.comfirm = comfirm;
             this.IP = ip;
         }
+    }
+
+    public class UserArgs
+    {
+        public string IP { get; set; }
+        public string Id { get; set; }
     }
 }

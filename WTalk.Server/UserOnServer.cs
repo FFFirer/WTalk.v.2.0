@@ -21,5 +21,6 @@ namespace WTalk.Server
             helper.Ready();
             Task.Run(() => helper.ReceiveData());
         }
+        
     }
 }
