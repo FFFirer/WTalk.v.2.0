@@ -39,6 +39,7 @@ namespace WTalk.Server
             CC.DataHandle.LoginHandler += Register; 
             CC.DataHandle.UpdateFriendListHandler += Update; //向在线用户更新好友列表
             CC.DataHandle.AddHandler += Send2User;
+            CC.DataHandle.TalkHandler += Talk2User;
             TCPHelper.ExitHandler += RemoveUserFormList;
             this.Closing += ServerWindow_Closing;
             CC.DataHandle.RemoveFriendHandler += DataHandle_RemoveFriendHandler; ;    //删除好友事件
@@ -171,7 +172,24 @@ namespace WTalk.Server
                 user.UserId = args.Id;
             }
         }
-        
+
+        //发送消息
+        public void Talk2User(object sender, TalkContract talk)
+        {
+            var receiver = users.Where(p => p.UserId.Equals(talk.ReceiverId)).FirstOrDefault();
+            if(receiver == null)
+            {
+                //存入待发列表
+                CC.ServerHandle.Save2WaitSending(talk);
+            }
+            else
+            {
+                //发送给收信方
+                receiver.helper.SendMessage(string.Format("TALK@{0}", DataHelpers.XMLSer<TalkContract>(talk)));
+            }
+        }
+
+
     }
 
     public class IP

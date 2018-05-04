@@ -18,6 +18,7 @@ namespace WTalk.Server.CC
         public static event EventHandler<AddCallBack> UpdateFriendListHandler;  //更新好友列表事件
         public static event EventHandler<UserArgs> LoginHandler;  //登陆事件
         public static event EventHandler<RemoveContract> RemoveFriendHandler;   //删除好友事件
+        public static event EventHandler<TalkContract> TalkHandler;     //转发消息
 
         public DataHandle()
         {
@@ -142,6 +143,19 @@ namespace WTalk.Server.CC
                     }
                     break;
                 case "TALK":
+                    TalkContract talk = new TalkContract();
+                    try
+                    {
+                        talk = DataHelpers.DeXMLSer<TalkContract>(d[1]);
+                        if(TalkHandler != null)
+                        {
+                            TalkHandler(null, talk);
+                        }
+                    }
+                    catch
+                    {
+
+                    }
                     break;
                 case "ADDCONFIRMCALLBACK":
                     AddConfirmCallBack accb = null;

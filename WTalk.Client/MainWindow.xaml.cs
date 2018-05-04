@@ -35,6 +35,7 @@ namespace WTalk.Client
             InitializeComponent();
             Connect();
             CC.DataHandle.SignupHandler += SignupHandle;
+            CC.DataHandle.LoginHandler += LoginSuccess;
         }
 
         private void btnLogin_Click(object sender, RoutedEventArgs e)
@@ -48,9 +49,9 @@ namespace WTalk.Client
             {
                 string ID = txtId.Text.Trim();
                 string Pwd = txtPwd.Password.Trim();
-                CC.DataHandle.LoginHandler += LoginSuccess;
                 LoginContract login = new LoginContract(ID, Pwd);
                 helper.SendMessage(string.Format("LOGIN@{0}", DataHelpers.XMLSer<LoginContract>(login)));
+                this.btnLogin.IsEnabled = false;
             }
         }
 
@@ -84,7 +85,7 @@ namespace WTalk.Client
                 {
                     App.Current.Dispatcher.Invoke(() =>
                     {
-                        ClientWindow cw = new ClientWindow(helper, data.UsersInfo, data.Talks, data.AddFriends, txtId.Text.Trim());
+                        ClientWindow cw = new ClientWindow(helper, data.UsersInfo, data.Talks, data.AddFriends, txtId.Text.Trim(), data.UserName);
                         cw.Show();
                         this.Close();
                     });
@@ -92,6 +93,7 @@ namespace WTalk.Client
             }
             else
             {
+                this.btnLogin.IsEnabled = true;
                 MessageBox.Show(data.msg);
             }
         }

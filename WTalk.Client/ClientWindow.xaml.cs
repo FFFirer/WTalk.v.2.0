@@ -27,14 +27,16 @@ namespace WTalk.Client
     {        
         //一些全局变量
         private string chating = null;
+        private string UserName = null;
         public ClientViewModel model = null;
         public FriendList friends = null;
         public ChatList chats = null;
         public NoticeList notices = null;
         public TCPHelper helper;
         public string LocalId;
-        public ClientWindow(TCPHelper helper, List<User> users, List<TalkContract> talks, List<AddFriend> addFriends, string id)
+        public ClientWindow(TCPHelper helper, List<User> users, List<TalkContract> talks, List<AddFriend> addFriends, string id, string name)
         {
+            this.UserName = name;
             model = new ClientViewModel();
             friends = new FriendList();
             chats = new ChatList();
@@ -47,21 +49,21 @@ namespace WTalk.Client
             {
                 friends.Add(new Friend { UserId = u.UserId, UserName = u.UserName, IP = u.ip, status = u.IsOnline });
             }
-            var senders = talks.Select(p => p.SenderId).ToList();
+            var senders = talks.Select(p => p.SenderId).ToList().Distinct();
             foreach(var s in senders)
             {
                 MsgList m = new MsgList();
-                var records = talks.Where(p => p.SenderId.Equals(s)).Select(q=>q.Content).ToList();
+                var records = talks.Where(p => p.SenderId.Equals(s)).Select(q=>q).ToList();
                 foreach (var r in records)
                 {
 
                     m.Add(new PerMsg
                     {
-                        SenderName = "暂无",
-                        Msg = r
+                        SenderName = talks.Where(p=>p.SenderId.Equals(r.SenderId)).Select(q=>q.SenderName).FirstOrDefault(),
+                        Msg = r.Content
                     });
                 }
-                chats.Add(new Chat { SenderId = s, SenderName = "DDD", ReceiverId = talks.Where(x => x.SenderId.Equals(s)).Select(y => y.ReceiverId).FirstOrDefault(), Msgs = m, WaitReadNum = m.Count });
+                chats.Add(new Chat { SenderId = s, SenderName = talks.Where(p=>p.SenderId.Equals(s)).Select(p=>p.SenderName).FirstOrDefault(), ReceiverId = talks.Where(x => x.SenderId.Equals(s)).Select(y => y.ReceiverId).FirstOrDefault(), Msgs = m, WaitReadNum = m.Count });
             }
             foreach(var n in addFriends)
             {
@@ -83,6 +85,7 @@ namespace WTalk.Client
             CC.DataHandle.SearchHandler += SearchCallBack;
             CC.DataHandle.AddComfirmHandler += AddComfimCallback;
             CC.DataHandle.RemoveFriendHandler += DataHandle_RemoveFriendHandler;
+            CC.DataHandle.GetMsgHandler += GetMsgHandler;
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
             this.lblID.Content = LocalId;
             this.helper = helper;
@@ -101,7 +104,10 @@ namespace WTalk.Client
         //删除好友
         private void DataHandle_RemoveFriendHandler(object sender, RemoveContract e)
         {
-            this.friends.Remove(friends.Where(p => p.UserId.Equals(e.UserId)).FirstOrDefault());
+            Dispatcher.Invoke(() =>
+            {
+                this.friends.Remove(friends.Where(p => p.UserId.Equals(e.UserId)).FirstOrDefault());
+            });
         }
 
         private void DataHandle_UpdateFriendHandler(object sender, User e)
@@ -113,7 +119,11 @@ namespace WTalk.Client
                 IP = e.ip,
                 status = e.IsOnline
             };
-            friends.Add(newfriend);
+            Dispatcher.Invoke(() =>
+            {
+                friends.Add(newfriend);
+
+            });
         }
 
         //好友确认回调
@@ -265,10 +275,12 @@ namespace WTalk.Client
         private void btnSend_Click(object sender, RoutedEventArgs e)
         {
             string content = txtSend.Text.Trim();
-            PerMsg p = new PerMsg(LocalId, content);
+            PerMsg p = new PerMsg(UserName, content);
             Chat boxItem = (Chat)listChat.SelectedItem;
             boxItem.Msgs.Add(p);
             txtSend.Text = "";
+            TalkContract talk = new TalkContract(LocalId, UserName, boxItem.SenderId, content);
+            helper.SendMessage(string.Format("TALK@{0}", DataHelpers.XMLSer<TalkContract>(talk)));
         }
 
         //清空输入框
@@ -379,6 +391,71 @@ namespace WTalk.Client
             //向服务器发送删除好友请求
             RemoveContract removeContract = new RemoveContract(LocalId, friend.UserId);
             helper.SendMessage(string.Format("REMOVE@{0}", DataHelpers.XMLSer<RemoveContract>(removeContract)));
+        }
+        //接收消息
+        private void GetMsgHandler(object sender, TalkContract talk)
+        {
+            PerMsg msg = new PerMsg(talk.SenderName, talk.Content);
+            Chat chat = chats.Where(p => p.SenderId.Equals(talk.SenderId)).FirstOrDefault();
+            if(chat == null)
+            {
+                chat = new Chat
+                {
+                    SenderId = talk.SenderId,
+                    SenderName = talk.SenderName,
+                    ReceiverId = talk.ReceiverId,
+                    Msgs = new MsgList()
+                };
+                chat.Msgs.Add(msg);
+                Dispatcher.Invoke(() =>
+                {
+                    chats.Add(chat);
+                });
+            }
+            else
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    chat.Msgs.Add(msg);
+                });
+            }
+        }
+
+        //双击好友列表打开聊天界面
+        private void listFriend_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            Friend friend = (Friend)this.listFriend.SelectedItem;
+            chating = friend.UserId;
+            Chat c = chats.Where(p => p.SenderId.Equals(friend.UserId)).FirstOrDefault();
+            if(c == null)
+            {
+                Chat newChat = new Chat
+                {
+                    SenderId = friend.UserId,
+                    SenderName = friend.UserName,
+                    ReceiverId = LocalId,
+                    Msgs = new MsgList(),
+                    WaitReadNum = 0
+                };
+                Dispatcher.Invoke(() =>
+                {
+                    chats.Add(newChat);
+                    listChat.SelectedItem = newChat;
+                    MainChat.ItemsSource = newChat.Msgs;
+                });
+            }
+            else
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    listChat.SelectedItem = c;
+                    MainChat.ItemsSource = c.Msgs;
+                    int x = c.WaitReadNum;
+                    model.AllChatWaitReads -= x;
+                    c.WaitReadNum = 0;
+                });
+            }
+            tabMain.SelectedIndex = 0;
         }
     }
 }

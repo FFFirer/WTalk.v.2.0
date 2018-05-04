@@ -111,10 +111,10 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <!--好友列表-->
-                        <ListBox Name="listFriend" Grid.Column="0"  ItemsSource="{Binding}" IsSynchronizedWithCurrentItem="True">
+                        <ListBox Name="listFriend" Grid.Column="0"  ItemsSource="{Binding}" IsSynchronizedWithCurrentItem="True" MouseDoubleClick="listFriend_MouseDoubleClick">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Margin="0,5,0,5" Padding="5" FontSize="16" Text="{Binding Path=UserId}">
+                                    <TextBlock Margin="0,5,0,5" Padding="5" FontSize="16" Text="{Binding Path=UserName}">
                                     </TextBlock>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>

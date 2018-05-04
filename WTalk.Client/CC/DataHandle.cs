@@ -16,6 +16,7 @@ namespace WTalk.Client.CC
         public static event EventHandler<AddConfirm> AddComfirmHandler; //好友申请事件
         public static event EventHandler<User> UpdateFriendHandler;     //好友添加事件
         public static event EventHandler<RemoveContract> RemoveFriendHandler;   //好友删除事件
+        public static event EventHandler<TalkContract> GetMsgHandler;   //接收消息事件
 
         public static void Handle(object sender, string data)
         {
@@ -100,6 +101,21 @@ namespace WTalk.Client.CC
                     catch(Exception e)
                     {
                         throw e;
+                    }
+                    break;
+                case "TALK":
+                    TalkContract talk = null;
+                    try
+                    {
+                        talk = DataHelpers.DeXMLSer<TalkContract>(d[1]);
+                        if(GetMsgHandler != null)
+                        {
+                            GetMsgHandler(null, talk);
+                        }
+                    }
+                    catch
+                    {
+                        break;
                     }
                     break;
                 default:

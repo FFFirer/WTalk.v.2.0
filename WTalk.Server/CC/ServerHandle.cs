@@ -60,16 +60,18 @@ namespace WTalk.Server.CC
                     }
                     //获取待接收消息
                     var talks = model.waitforsendings.Where((p) => p.ReceiverId.Equals(contract.UserId)).Select(p => new TalkContract {
-                        Content=p.Msg,
-                        SenderId=p.SenderId,
-                        ReceiverId=p.ReceiverId
+                        Content = p.Msg,
+                        SenderId = p.SenderId,
+                        ReceiverId = p.ReceiverId,
+                        SenderName = model.users.Where(x => x.UserId.Equals(p.SenderId)).Select(y => y.UserName).FirstOrDefault()
+                        
                     }).ToList();
                     //获取待同意好友申请
                     var adds = model.addfriends.Where((p) => p.ReceiverId.Equals(contract.UserId) && p.Status.Equals(Status.Waiting.ToString())).Select((p) => new AddFriend {
                         UserId = p.SenderId,
 
                     }).ToList();
-                    callback = new LoginCallBack(Status.Yes, friends, talks, adds, null);
+                    callback = new LoginCallBack(Status.Yes, friends, talks, adds, null, user.UserName);
                     model.SaveChanges();    //刷新数据库
                     return callback;
                 }
@@ -78,7 +80,7 @@ namespace WTalk.Server.CC
                     List<User> friends = null;
                     List<TalkContract> talks = null;
                     List<AddFriend> adds = null;
-                    callback = new LoginCallBack(Status.No, friends, talks, adds, "登陆失败");
+                    callback = new LoginCallBack(Status.No, friends, talks, adds, "登陆失败", "未登录");
                     return callback;
                 }
             }
@@ -262,5 +264,20 @@ namespace WTalk.Server.CC
             }
         }
         #endregion
+
+        public static void Save2WaitSending(TalkContract talk)
+        {
+            using(var model = new DataModel())
+            {
+                model.waitforsendings.Add(new waitforsending
+                {
+                    SendTime = DataHelpers.GetTimeStamp(),
+                    SenderId = talk.SenderId,
+                    ReceiverId = talk.ReceiverId,
+                    Msg = talk.Content
+                });
+                model.SaveChanges();
+            }
+        }
     }
 }

@@ -110,12 +110,14 @@ namespace WTalk.Domain
     public class TalkContract
     {
         public string SenderId { get; set; }
+        public string SenderName { get; set; }
         public string ReceiverId { get; set; }
         public string Content { get; set; }
         public TalkContract() { }
-        public TalkContract(string sender, string receiver, string content)
+        public TalkContract(string sender, string name, string receiver, string content)
         {
             this.SenderId = sender;
+            this.SenderName = name;
             this.ReceiverId = receiver;
             this.Content = content;
         }
@@ -153,18 +155,20 @@ namespace WTalk.Domain
     public class LoginCallBack
     {
         public Status LoginStatus { get; set; } //Yes or No
+        public string UserName { get; set; }
         public List<User> UsersInfo { get; set; }
         public List<TalkContract> Talks { get; set; }
         public List<AddFriend> AddFriends { get; set; }
         public string msg { get; set; }
 
         public LoginCallBack() { }
-        public LoginCallBack(Status status, List<User> usersInfo, List<TalkContract> talks, List<AddFriend> addFriends, string msg)
+        public LoginCallBack(Status status, List<User> usersInfo, List<TalkContract> talks, List<AddFriend> addFriends, string msg, string name)
         {
             this.LoginStatus = status;
             this.UsersInfo = usersInfo;
             this.Talks = talks;
             this.AddFriends = addFriends;
+            this.UserName = name;
             this.msg = msg;
         }
     }
