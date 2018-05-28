@@ -32,6 +32,7 @@ namespace WTalk.Client
         public FriendList friends = null;
         public ChatList chats = null;
         public NoticeList notices = null;
+        public UdpHelper udpHelper;
         public TCPHelper helper;
         public string LocalId;
         public ClientWindow(TCPHelper helper, List<User> users, List<TalkContract> talks, List<AddFriend> addFriends, string id, string name)
@@ -89,6 +90,7 @@ namespace WTalk.Client
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
             this.lblID.Content = LocalId;
             this.helper = helper;
+            this.udpHelper = new UdpHelper((IPEndPoint)helper.tcpClient.Client.LocalEndPoint);
             //绑定关联数据
 
             this.tabMain.DataContext = model;
