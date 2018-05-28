@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WTalk.Client"
         mc:Ignorable="d"
-        Title="WTalk" Height="450" Width="808" MinWidth="600" MinHeight="600">
+        Title="WTalk" Height="450" Width="808" MinWidth="600" MinHeight="600" Loaded="window_Loaded">
     <Window.Resources>
         <local:WaitShowConverter x:Key="wsConverter"/>
         <local:StatusShowConverter x:Key="ssConverter"/>

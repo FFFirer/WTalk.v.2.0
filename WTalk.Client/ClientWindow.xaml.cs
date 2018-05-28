@@ -91,6 +91,9 @@ namespace WTalk.Client
             this.lblID.Content = LocalId;
             this.helper = helper;
             this.udpHelper = new UdpHelper((IPEndPoint)helper.tcpClient.Client.LocalEndPoint);
+            udpHelper.HandleData += CC.DataHandle.Handle;
+            //Task.Run(() => udpHelper.ReceiveUdpDataAsync());
+            //udpHelper.ReceiveUdpDataAsync();
             //绑定关联数据
 
             this.tabMain.DataContext = model;
@@ -101,6 +104,11 @@ namespace WTalk.Client
             this.listChat.AddHandler(UIElement.MouseDownEvent, new MouseButtonEventHandler(listChat_MouseLeftButtonDown), true);
             this.listChat.AddHandler(UIElement.MouseDownEvent, new MouseButtonEventHandler(listChat_MouseRightButtonDown), true);
             this.listNotice.AddHandler(UIElement.MouseDownEvent, new MouseButtonEventHandler(listNotice_MouseLeftButtonDown), true);
+        }
+
+        private void UdpHelper_HandleData(object sender, string e)
+        {
+            throw new NotImplementedException();
         }
 
         //删除好友
@@ -282,7 +290,19 @@ namespace WTalk.Client
             boxItem.Msgs.Add(p);
             txtSend.Text = "";
             TalkContract talk = new TalkContract(LocalId, UserName, boxItem.SenderId, content);
-            helper.SendMessage(string.Format("TALK@{0}", DataHelpers.XMLSer<TalkContract>(talk)));
+            string payload = string.Format("TALK@{0}", DataHelpers.XMLSer<TalkContract>(talk));
+            var receiver = friends.Where(f => f.UserId.Equals(boxItem.SenderId)).FirstOrDefault();
+            if(receiver.IP != "127.0.0.1")
+            {
+                string[] ip = receiver.IP.Split(':');
+                IPAddress address = IPAddress.Parse(ip[0]);
+                IPEndPoint remote = new IPEndPoint(address, 51666);
+                udpHelper.SendMessageAsync(payload, remote);
+            }
+            else
+            {
+                helper.SendMessage(payload);
+            }
         }
 
         //清空输入框
@@ -458,6 +478,12 @@ namespace WTalk.Client
                 });
             }
             tabMain.SelectedIndex = 0;
+        }
+
+        private void window_Loaded(object sender, RoutedEventArgs e)
+        {
+            //Task.Run(() => udpHelper.ReceiveUdpDataAsync());
+            udpHelper.ReceiveUdpDataAsync();
         }
     }
 }

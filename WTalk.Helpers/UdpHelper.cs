@@ -27,11 +27,15 @@ namespace WTalk.Helpers
         }
 
         //异步发送
-        public async void SendMessageAsync(byte[] bytes, IPEndPoint remoteEndPoint)
+        public async void SendMessageAsync(string msg, IPEndPoint remoteEndPoint)
         {
+            byte[] sendbytes = Encoding.Unicode.GetBytes(msg);
             if(this.udpClient != null)
             {
-                await udpClient.SendAsync(bytes, bytes.Length, remoteEndPoint);
+                for(int i = 0; i < 10; i++)
+                {
+                    await udpClient.SendAsync(sendbytes, sendbytes.Length, remoteEndPoint);
+                }
             }
         }
 
