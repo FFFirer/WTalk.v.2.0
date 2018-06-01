@@ -124,7 +124,7 @@ namespace WTalk.Server
             var u = users.Where(p => p.helper.tcpClient.Client.RemoteEndPoint.ToString().Equals(ip)).FirstOrDefault();
             users.Remove(u);
             //向所有在线好友发送离线消息
-            string msg = string.Format("PRESENCEMSG@{0}", new PresenceMsg(u.UserId, Helpers.DataHelpers.GetTimeStamp(), "127.0.0.1", Status.Offline));
+            string msg = string.Format("PRESENCEMSG@{0}", Helpers.DataHelpers.XMLSer<PresenceMsg>(new PresenceMsg(u.UserId, Helpers.DataHelpers.GetTimeStamp(), "127.0.0.1", Status.Offline)));
             List<User> Onlines = CC.ServerHandle.GetFriendsOnline(u.UserId);
             foreach(var a in users)
             {
