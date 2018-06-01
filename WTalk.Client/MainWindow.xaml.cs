@@ -26,7 +26,7 @@ namespace WTalk.Client
     /// </summary>
     public partial class MainWindow : Window
     {
-        public static string DefaultIP = "192.168.43.171";
+        public static string DefaultIP = "192.168.43.34";
         public static int DefaultPort = 51888;
         private TCPHelper helper = new TCPHelper(IPAddress.Parse(DefaultIP), DefaultPort);
         private bool isOnline = false;
