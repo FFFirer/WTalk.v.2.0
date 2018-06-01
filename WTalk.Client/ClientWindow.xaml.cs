@@ -32,9 +32,10 @@ namespace WTalk.Client
         public FriendList friends = null;
         public ChatList chats = null;
         public NoticeList notices = null;
-        public UdpHelper udpHelper;
         public TCPHelper helper;
         public string LocalId;
+
+        public UDPHelper.UDPHelper uDPHelper { get; set; }
         public ClientWindow(TCPHelper helper, List<User> users, List<TalkContract> talks, List<AddFriend> addFriends, string id, string name)
         {
             this.UserName = name;
@@ -90,10 +91,6 @@ namespace WTalk.Client
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
             this.lblID.Content = LocalId;
             this.helper = helper;
-            this.udpHelper = new UdpHelper((IPEndPoint)helper.tcpClient.Client.LocalEndPoint);
-            udpHelper.HandleData += CC.DataHandle.Handle;
-            //Task.Run(() => udpHelper.ReceiveUdpDataAsync());
-            //udpHelper.ReceiveUdpDataAsync();
             //绑定关联数据
 
             this.tabMain.DataContext = model;
@@ -104,12 +101,10 @@ namespace WTalk.Client
             this.listChat.AddHandler(UIElement.MouseDownEvent, new MouseButtonEventHandler(listChat_MouseLeftButtonDown), true);
             this.listChat.AddHandler(UIElement.MouseDownEvent, new MouseButtonEventHandler(listChat_MouseRightButtonDown), true);
             this.listNotice.AddHandler(UIElement.MouseDownEvent, new MouseButtonEventHandler(listNotice_MouseLeftButtonDown), true);
-        }
 
-        private void UdpHelper_HandleData(object sender, string e)
-        {
-            throw new NotImplementedException();
+            
         }
+        
 
         //删除好友
         private void DataHandle_RemoveFriendHandler(object sender, RemoveContract e)
@@ -297,7 +292,7 @@ namespace WTalk.Client
                 string[] ip = receiver.IP.Split(':');
                 IPAddress address = IPAddress.Parse(ip[0]);
                 IPEndPoint remote = new IPEndPoint(address, 51666);
-                udpHelper.SendMessageAsync(payload, remote);
+                uDPHelper.SendMessageAsync(payload, remote);
             }
             else
             {
@@ -482,8 +477,11 @@ namespace WTalk.Client
 
         private void window_Loaded(object sender, RoutedEventArgs e)
         {
+            //初始化udp模块
+            uDPHelper = new UDPHelper.UDPHelper();
+            uDPHelper.DataHandle += CC.DataHandle.Handle;
             //Task.Run(() => udpHelper.ReceiveUdpDataAsync());
-            udpHelper.ReceiveUdpDataAsync();
+            Task.Run(() => uDPHelper.ReceiveDataAsync());
         }
     }
 }
