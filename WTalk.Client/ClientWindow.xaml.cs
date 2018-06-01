@@ -88,6 +88,7 @@ namespace WTalk.Client
             CC.DataHandle.AddComfirmHandler += AddComfimCallback;
             CC.DataHandle.RemoveFriendHandler += DataHandle_RemoveFriendHandler;
             CC.DataHandle.GetMsgHandler += GetMsgHandler;
+            CC.DataHandle.PresenceHandler += UpdateHandler;
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
             this.lblID.Content = LocalId;
             this.helper = helper;
@@ -104,7 +105,26 @@ namespace WTalk.Client
 
             
         }
-        
+
+        private void UpdateHandler(object sender, PresenceMsg e)
+        {
+            foreach(var f in friends)
+            {
+                if(f.UserId == e.UserId)
+                {
+                    f.status = e.status;
+                    if(e.status == Status.Online)
+                    {
+                        f.IP = e.IP.ToString();
+                    }
+                    else
+                    {
+                        f.IP = "127.0.0.1";
+                    }
+                }
+            }
+        }
+
 
         //删除好友
         private void DataHandle_RemoveFriendHandler(object sender, RemoveContract e)

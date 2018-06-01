@@ -13,10 +13,27 @@ namespace WTalk.Server.CC
 {
     public class ServerHandle : IServerHandle
     {
+        //出席服务
+        public static event EventHandler<string> PresenceHandler;
         public ServerHandle()
         {
             TCPHelper.ExitHandler += RemoveUser;
             //model = new DataModel();
+        }
+        //获取在线列表
+        public static List<User> GetFriendsOnline(string userId)
+        {
+            using (var model = new Data.DataModel())
+            {
+                var friendsonline = model.friends.Join(model.presenceusers, a => a.FriendId, b => b.UserId, (a, b) => new User
+                {
+                    UserId = b.UserId,
+                    UserName = model.users.Where(p => p.UserId.Equals(a.UserId)).Select(p => p.UserName).FirstOrDefault(),
+                    IsOnline = Status.Online,
+                    ip = b.IPAddress
+                }).ToList();
+                return friendsonline;
+            }
         }
         //用户登陆
         public LoginCallBack Login(TcpClient client, LoginContract contract)
@@ -29,7 +46,9 @@ namespace WTalk.Server.CC
                 {
                     //将该用户写入出席服务
                     model.presenceusers.Add(new presenceuser { UserId = contract.UserId, IPAddress = client.Client.RemoteEndPoint.ToString(), PresenceTime = DataHelpers.GetTimeStamp(), Status = Status.Online.ToString() });
-
+                    PresenceMsg presence = new PresenceMsg(contract.UserId, DataHelpers.GetTimeStamp(), (client.Client.RemoteEndPoint.ToString().Split(':'))[0], Status.Online);
+                    string presenceMsg = string.Format("PRESENCEMSG@{0}", WTalk.Helpers.DataHelpers.XMLSer<PresenceMsg>(presence));
+                    
                     //获取好友列表
                     var friends = model.friends.Where(p => p.UserId.Equals(user.UserId)).Select((p) => new User
                     {
@@ -46,8 +65,12 @@ namespace WTalk.Server.CC
                         IsOnline = Status.Online,
                         ip = b.IPAddress
                     }).ToList();
+                    if (PresenceHandler != null)
+                    {
+                        PresenceHandler(friendsInfo, presenceMsg);
+                    }
                     //合并两个文件
-                    foreach(var i in friendsInfo)
+                    foreach (var i in friendsInfo)
                     {
                         foreach(var i2 in friends)
                         {

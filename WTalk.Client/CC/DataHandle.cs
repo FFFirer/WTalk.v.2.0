@@ -17,6 +17,7 @@ namespace WTalk.Client.CC
         public static event EventHandler<User> UpdateFriendHandler;     //好友添加事件
         public static event EventHandler<RemoveContract> RemoveFriendHandler;   //好友删除事件
         public static event EventHandler<TalkContract> GetMsgHandler;   //接收消息事件
+        public static event EventHandler<PresenceMsg> PresenceHandler;  //出席消息事件
 
         public static void Handle(object sender, string data)
         {
@@ -52,6 +53,11 @@ namespace WTalk.Client.CC
                     }
                     break;
                 case "PRESENCEMSG":
+                    PresenceMsg presence = DataHelpers.DeXMLSer<PresenceMsg>(d[1]);
+                    if(PresenceHandler != null)
+                    {
+                        PresenceHandler(null, presence);
+                    }
                     break;
                 case "SEARCHCALLBACK":
                     try

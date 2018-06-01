@@ -19,6 +19,7 @@ namespace WTalk.Server.CC
         public static event EventHandler<UserArgs> LoginHandler;  //登陆事件
         public static event EventHandler<RemoveContract> RemoveFriendHandler;   //删除好友事件
         public static event EventHandler<TalkContract> TalkHandler;     //转发消息
+        //public static event EventHandler<string> PresenceHandler;   //出席信息
 
         public DataHandle()
         {

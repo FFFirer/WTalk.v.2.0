@@ -40,9 +40,25 @@ namespace WTalk.Server
             CC.DataHandle.UpdateFriendListHandler += Update; //向在线用户更新好友列表
             CC.DataHandle.AddHandler += Send2User;
             CC.DataHandle.TalkHandler += Talk2User;
+            CC.ServerHandle.PresenceHandler += Presence2All;
             TCPHelper.ExitHandler += RemoveUserFormList;
             this.Closing += ServerWindow_Closing;
             CC.DataHandle.RemoveFriendHandler += DataHandle_RemoveFriendHandler; ;    //删除好友事件
+        }
+
+        private void Presence2All(object sender, string e)
+        {
+            List<User> usersOnline = (List<User>)sender;
+            foreach(var a in usersOnline)
+            {
+                foreach(var s in users)
+                {
+                    if(s.UserId == a.UserId)
+                    {
+                        s.helper.SendMessage(e);
+                    }
+                }
+            }
         }
 
         private void DataHandle_RemoveFriendHandler(object sender, RemoveContract e)
@@ -107,6 +123,19 @@ namespace WTalk.Server
         {
             var u = users.Where(p => p.helper.tcpClient.Client.RemoteEndPoint.ToString().Equals(ip)).FirstOrDefault();
             users.Remove(u);
+            //向所有在线好友发送离线消息
+            string msg = string.Format("PRESENCEMSG@{0}", new PresenceMsg(u.UserId, Helpers.DataHelpers.GetTimeStamp(), "127.0.0.1", Status.Offline));
+            List<User> Onlines = CC.ServerHandle.GetFriendsOnline(u.UserId);
+            foreach(var a in users)
+            {
+                foreach(var o in Onlines)
+                {
+                    if(a.UserId == o.UserId)
+                    {
+                        a.helper.SendMessage(msg);
+                    }
+                }
+            }
         }
 
         public void Send2User(object sender, AddComfirmArgs args)

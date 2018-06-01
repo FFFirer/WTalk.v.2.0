@@ -191,11 +191,11 @@ namespace WTalk.Domain
     {
         public string UserId { get; set; }
         public string Time { get; set; }
-        public IPAddress IP { get; set; }
+        public string IP { get; set; }
         public Status status { get; set; }
 
         public PresenceMsg() { }
-        public PresenceMsg(string userId, string time, IPAddress ip, Status status)
+        public PresenceMsg(string userId, string time, string ip, Status status)
         {
             this.UserId = userId;
             this.Time = time;
